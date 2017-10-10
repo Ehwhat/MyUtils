@@ -175,8 +175,7 @@ namespace MathUtils {
 		return (s > 0 && t > 0 && (1 - s - t) > 0);
 	}
 
-	tyga::Quaternion Slerp(tyga::Quaternion lhs, tyga::Quaternion rhs, float t, EaseType type)
-	{
+	tyga::Quaternion Slerp(tyga::Quaternion lhs, tyga::Quaternion rhs, float t, EaseType type) {
 		lhs = tyga::unit(lhs);
 		rhs = tyga::unit(rhs);
 
@@ -204,14 +203,13 @@ namespace MathUtils {
 		tyga::unit(result);
 
 		return lhs*cosf(angleToResult) + result*sinf(angleToResult);
-
 	}
-
 	
-
+	double SinWave(double frequency, double amplitude, double phase, double inital, double time)
+	{
+		return inital + sin(2*M_PI*frequency*time + phase)*amplitude;
+	}
 	
-
-
 
 	std::string ToStringVector3(tyga::Vector3 v) {
 		return "(X: " + std::to_string(v.x) + " Y: " + std::to_string(v.y) + " Z: " + std::to_string(v.z) + ")";

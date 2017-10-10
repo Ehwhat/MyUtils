@@ -4,6 +4,16 @@
 #include <string>
 
 
+/**
+*	My Math Utils, developed by Joshua Stevenson (Q5120984), 2017
+*	I'm putting all the math helper stuff I can think of in here for all parts of the ASP module, so there's going be an odd mix in here
+*	Don't know much about licencing so I don't care what happens to this code, go crazy
+*
+*	TODO:
+*	Finish Commenting
+*	Extrapolate unrelated math functions to other namespaces (Ex. MathUtils.Core, MathUtils.Matrix)
+*	Fix Sphereical coordinantes
+*/
 namespace MathUtils {
 
 	enum EaseType {
@@ -12,7 +22,12 @@ namespace MathUtils {
 		EaseOut,
 		Smooth
 	};
+	
 
+	/**
+	* Used to define planes using a point and a normal.
+	* 
+	*/
 	struct Plane {
 		tyga::Vector3 point;
 		tyga::Vector3 normal;
@@ -36,19 +51,57 @@ namespace MathUtils {
 		}
 	};
 
+	/**
+	* PI constant, redundent.
+	*/
 	const double _pi = 3.14159265358979323846;
 
+	/**
+	* Degrees to Radians conversion.
+	*
+	* @param degrees Degrees
+	* @return result in radians.
+	*/
 	double DegreesToRadians(double degrees);
 
+	/**
+	* Radians to Degrees conversion.
+	*
+	* @param radians Radians
+	* @return result in degrees.
+	*/
 	double RadiansToDegrees(double radians);
 
+	/**
+	* MPH to meters-per-minute conversion.
+	*
+	* @param miles Miles Per Hour
+	* @return Meters Per Minute.
+	*/
 	double MilesPerHourToMetersPerMinute(double miles);
 	
+	/**
+	* MPH to roations-per-minute conversion.
+	*
+	* @param miles Miles Per Hour
+	* @param radius radius in meters
+	* @return Rotations per minute.
+	*/
 	double MPHtoRotationsPerMinute(double miles, double radius);
 
 	double QuatDotProduct(tyga::Quaternion lhs, tyga::Quaternion rhs);
 
+	/**
+	* Speherical Coords to Cartesian Coords (Might not work as intended)
+	*
+	* @param theta Spherical Theta
+	* @param axion Spherical Axion
+	* @param radius Radius Of Sphere
+	* @return tyga::Vector3 of Coords.
+	*/
 	tyga::Vector3 SphericalPositionToVectorPosition(double theta, double axion, double radius);
+
+	//TODO Cartesian Coords to Speherical Coords (Might have some issues with world to local)
 
 	double GetSpeedFromVelocity(tyga::Vector3 velocity);
 
@@ -60,15 +113,58 @@ namespace MathUtils {
 
 	double GetDistanceOfPointPerpendicularToPlane(tyga::Vector3 point, Plane plane);
 
+	/**
+	* Extract translation vector from Matrix
+	*
+	* @param m to extract from
+	* @return extracted translation vector
+	*/
 	tyga::Vector3 GetTranslationVectorFromMatrix(tyga::Matrix4x4 m);
+	/**
+	* Generate matrix from translation vector
+	*
+	* @param v translation vector
+	* @return resulting matrix
+	*/
 	tyga::Matrix4x4 GetMatrixFromTranslationVector(tyga::Vector3 v);
 
+
+	/**
+	* Extract scaling vector from Matrix
+	*
+	* @param m to extract from
+	* @return extracted scaling vector
+	*/
 	tyga::Vector3 GetScaleVectorFromMatrix(tyga::Matrix4x4 m);
+	/**
+	* Generate matrix from scaling vector
+	*
+	* @param v scaling vector
+	* @return resulting matrix
+	*/
 	tyga::Matrix4x4 GetMatrixFromScaleVector(tyga::Vector3 v);
 
+	/**
+	* Extract Rotation Matrix from Matrix
+	*
+	* @param m to extract from
+	* @return extracted rotation matrix
+	*/
 	tyga::Matrix4x4 GetRotationMatrixFromMatrix(tyga::Matrix4x4 m);
 
+	/**
+	* Extract eular from matrix
+	*
+	* @param m to extract from
+	* @return extracted Eular
+	*/
 	tyga::Vector3 GetEularFromMatrix(tyga::Matrix4x4 m);
+	/**
+	* Generate matrix from eular
+	*
+	* @param eular Eular Angles as vector
+	* @return resulting matrix
+	*/
 	tyga::Matrix4x4 GetMatrixFromEular(tyga::Vector3 eular);
 
 	tyga::Matrix4x4 GetMatrixFromQuat(tyga::Quaternion q);
@@ -76,6 +172,18 @@ namespace MathUtils {
 	tyga::Matrix4x4 CombineMatrices(tyga::Matrix4x4 first, tyga::Matrix4x4 second);
 
 	bool IsInsideTriangle(tyga::Vector2 point, Triangle tri);
+
+	/**
+	* Generate Sine Wave and sample at time
+	*
+	* @param frequency Frequency of the Sine wave
+	* @param amplitude Amplitude of the Sine wave
+	* @param phase Phase difference along the Sine wave
+	* @param inital Inital value of the Sine wave
+	* @param time time sampled from the Sine wave
+	* @return result from Sine Wave
+	*/
+	double SinWave(double frequency, double amplitude, double phase, double inital, double time);
 
 	template<class T>
 	T Lerp(T lhs, T rhs, float t);
@@ -99,11 +207,10 @@ namespace MathUtils {
 	}
 
 	float LinearTime(float t);
-
 	float SmoothStepTime(float t);
-
 	float EaseOutTime(float t);
 	float EaseInTime(float t);
+
 	template<class T>
 	T IncOverTime(T initalValue, T increment, float time)
 	{
