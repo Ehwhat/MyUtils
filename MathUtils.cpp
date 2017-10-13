@@ -14,7 +14,7 @@ namespace MathUtils {
 
 	double MilesPerHourToMetersPerMinute(double miles)
 	{
-		return miles * 1609;
+		return miles * 1609; // Super magic number is conversion rate, don't worry about it
 	}
 
 	double MPHtoRotationsPerMinute(double miles, double radius)
@@ -184,12 +184,6 @@ namespace MathUtils {
 		t = EaseTime(type, t);
 
 		float dotProduct = QuatDotProduct(lhs, rhs);
-		//const double theshold = 0.9995; // If the results look weird from being to close
-		//if (fabs(dotProduct) > theshold) {
-		//	result = lhs + t*(rhs - lhs);
-		//	tyga::unit(result);
-		//	return result;
-		//}
 		if (dotProduct < 0.0) {
 			rhs = -rhs;
 			dotProduct = -dotProduct;

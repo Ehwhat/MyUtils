@@ -185,9 +185,6 @@ namespace MathUtils {
 	*/
 	double SinWave(double frequency, double amplitude, double phase, double inital, double time);
 
-	template<class T>
-	T Lerp(T lhs, T rhs, float t);
-
 	tyga::Quaternion Slerp(tyga::Quaternion lhs, tyga::Quaternion rhs, float t, EaseType type = EaseType::Linear);
 
 	template<class T>
@@ -200,16 +197,18 @@ namespace MathUtils {
 
 	float EaseTime(EaseType type, float time);
 
-	template<class T>
-	T Lerp(T lhs, T rhs, float t, EaseType type = EaseType::Linear)
-	{
-		return (1 - t)*lhs + EaseTime(type,t) * rhs;
-	}
+	
 
 	float LinearTime(float t);
 	float SmoothStepTime(float t);
 	float EaseOutTime(float t);
 	float EaseInTime(float t);
+
+	template<class T>
+	T Lerp(T lhs, T rhs, float t, EaseType type = EaseType::Linear)
+	{
+		return (1 - t)*lhs + EaseTime(type, t) * rhs;
+	}
 
 	template<class T>
 	T IncOverTime(T initalValue, T increment, float time)

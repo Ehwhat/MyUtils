@@ -1,9 +1,9 @@
 #include "ActorUtils.h"
 #include "MathUtils.h"
 #include <tyga/ActorWorld.hpp>
-#include <tyga/GraphicsCentre.hpp>
 #include <tyga/Actor.hpp>
 #include <tyga/BasicWorldClock.hpp>
+#include <iostream>
 
 void ActorUtils::AddModelToActor(std::shared_ptr<tyga::ActorDelegate> actor ,std::string modelIdentifier, tyga::Vector3 colour)
 {
@@ -101,4 +101,47 @@ std::shared_ptr<tyga::HActor> ActorUtils::AddHActorToWorld(tyga::Vector3 pos, ty
 	actor->SetOffsetTransform(MathUtils::GetMatrixFromEular(rot)*MathUtils::GetMatrixFromTranslationVector(pos));
 	AddHActorToWorld(actor, isRoot);
 	return actor;
+}
+
+std::shared_ptr<tyga::GraphicsMesh> ActorUtils::GraphicsShare::GetMeshFromIdentifier(std::string name)
+{
+	auto search = _sharedMeshes.find(name);
+	if (search == _sharedMeshes.end()) {
+		//Not found a mesh
+		auto graphics = tyga::GraphicsCentre::defaultCentre();
+		std::shared_ptr<tyga::GraphicsMesh> mesh = graphics->newMeshWithIdentifier(name);
+		_sharedMeshes.emplace(name, mesh);
+		return mesh;
+	}
+	std::cout << "Found Shared Mesh";
+	return search->second;
+}
+
+std::shared_ptr<tyga::GraphicsMaterial> ActorUtils::GraphicsShare::GetMaterial(std::string name, tyga::Vector3 colour)
+{
+	auto search = _sharedMaterials.find(name);
+	if (search == _sharedMaterials.end()) {
+		//Not found a mesh
+		auto graphics = tyga::GraphicsCentre::defaultCentre();
+		std::shared_ptr<tyga::GraphicsMaterial> material = graphics->newMaterial();
+		material->colour = colour;
+		_sharedMaterials.emplace(name, material);
+		return material;
+	}
+	return search->second;
+}
+
+std::shared_ptr<tyga::GraphicsMaterial> ActorUtils::GraphicsShare::GetMaterial(std::string name, std::string materialName)
+{
+	auto search = _sharedMaterials.find(name);
+	if (search == _sharedMaterials.end()) {
+		//Not found a mesh
+		auto graphics = tyga::GraphicsCentre::defaultCentre();
+		std::shared_ptr<tyga::GraphicsMaterial> material = graphics->newMaterial();
+		material->texture = materialName;
+		_sharedMaterials.emplace(name, material);
+		return material;
+	}
+	return search->second;
+	return std::shared_ptr<tyga::GraphicsMaterial>();
 }
