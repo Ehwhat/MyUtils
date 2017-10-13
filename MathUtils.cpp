@@ -175,13 +175,13 @@ namespace MathUtils {
 		return (s > 0 && t > 0 && (1 - s - t) > 0);
 	}
 
-	tyga::Quaternion Slerp(tyga::Quaternion lhs, tyga::Quaternion rhs, float t, EaseType type) {
+	tyga::Quaternion Slerp(tyga::Quaternion lhs, tyga::Quaternion rhs, float t, MathUtils::AnimationCurve animationCurve) {
 		lhs = tyga::unit(lhs);
 		rhs = tyga::unit(rhs);
 
 		tyga::Quaternion result;
 
-		t = EaseTime(type, t);
+		t = animationCurve.GetAnimationCurveOutput(t);
 
 		float dotProduct = QuatDotProduct(lhs, rhs);
 		if (dotProduct < 0.0) {
@@ -233,7 +233,7 @@ namespace MathUtils {
 		}
 		return output;
 	}
-
+	/*
 	float LinearTime(float t)
 	{
 		return t;
@@ -241,7 +241,7 @@ namespace MathUtils {
 
 	float SmoothStepTime(float t)
 	{
-		return t*t*t * (t * (6.f*t - 15.f) + 10.f);
+		return ((t) * (t) * (3 - 2 * (t))); //t*t*t * (t * (6.f*t - 15.f) + 10.f);
 	}
 
 	float EaseOutTime(float t) {
@@ -252,6 +252,17 @@ namespace MathUtils {
 		return 1.f - cosf(t*M_PI*0.5f);
 	}
 
+	float SplineTime(float t, float p0, float p1, float p2, float p3)
+	{
+		return 0.5f * (
+			(2 * p1) +
+			(-p0 + p2) * t +
+			(2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t +
+			(-p0 + 3 * p1 - 3 * p2 + p3) * t * t * t
+			);
+	}
+
+	
 	float EaseTime(EaseType type, float time) {
 		switch (type)
 		{
@@ -271,7 +282,7 @@ namespace MathUtils {
 			return LinearTime(time);
 			break;
 		}
-	}
+	}*/
 
 	
 

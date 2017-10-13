@@ -1,22 +1,25 @@
 #include "KeyframeAnimation.h"
 #include "MathUtils.h"
+#include <cmath>
+#include <iostream>
 
-
-KeyframeAnimation::KeyframeAnimation()
+KeyframeAnimation::KeyframeAnimation(AnimationClampType clamp)
 {
 	keyframes.resize(1);
 	keyframes[0] = Keyframe();
 	keyAmount = 1;
-}
 
+	SetClampType(clamp);
+
+}
 
 KeyframeAnimation::~KeyframeAnimation()
 {
 }
 
-Keyframe KeyframeAnimation::AddKeyframe(float _time, tyga::Vector3 _position, tyga::Quaternion _rotation, tyga::Vector3 _scale, KeyFrameEasing _ease)
+Keyframe KeyframeAnimation::AddKeyframe(float _time, MathUtils::AnimationCurve _curve, tyga::Vector3 _position, tyga::Quaternion _rotation, tyga::Vector3 _scale)
 {
-	Keyframe keyframe = Keyframe(_time, _position, _rotation, _scale, _ease);
+	Keyframe keyframe = Keyframe(_time,_curve, _position, _rotation, _scale);
 	SortAddKeyframe(keyframe);
 	return keyframe;
 }
@@ -35,20 +38,26 @@ Keyframe KeyframeAnimation::GetInterpolatedKeyframe(float time)
 	if (keyAmount < 2 || time < 0) {
 		return keyframes[0];
 	}
-	if (time > endTime) {
-		return keyframes[keyAmount-1];
-	}
+	time = GetTimeFromClamp(time);
+	
 	for (int i = 0; i < keyAmount-1; i++)
 	{
 		Keyframe currentKeyFrame = keyframes[i];
 		Keyframe nextKeyFrame = keyframes[i + 1];
 		if (IsTimeBetweenKeyframes(time,currentKeyFrame, nextKeyFrame)) {
 			float t = GetPercentageBetweenKeyframes(time, currentKeyFrame, nextKeyFrame);
-			Keyframe result = GenerateInterpolatedKeyframe(t, currentKeyFrame, nextKeyFrame, currentKeyFrame.ease);
+			t = MathUtils::Clamp<float>(t, 0, 1);
+			//std::cout << t << "\n";
+			Keyframe result = GenerateInterpolatedKeyframe(t, currentKeyFrame, nextKeyFrame, currentKeyFrame.animationCurve);
 			return result;
 		}
 	}
 	return Keyframe();
+}
+
+void KeyframeAnimation::SetClampType(AnimationClampType type)
+{
+	clampType = type;
 }
 
 std::string KeyframeAnimation::ToString()
@@ -65,6 +74,25 @@ std::string KeyframeAnimation::ToString()
 		result = "No Keys In Keyframe Animation";
 	}
 	return result;
+}
+
+float KeyframeAnimation::GetTimeFromClamp(float time)
+{
+	switch (clampType)
+	{
+	case AnimationClampType::Single:
+		return MathUtils::Clamp<float>(time, 0, endTime);
+	case AnimationClampType::Loop:
+		return MathUtils::Clamp<float>(std::fmodf(time, endTime), 0, endTime);
+	case AnimationClampType::PingPong:
+		time = std::fmodf(time, endTime * 2);
+		if (time > endTime) {
+			time -= (time-endTime) * 2;
+		}
+		return MathUtils::Clamp<float>(time, 0, endTime);
+	default:
+		return MathUtils::Clamp<float>(time, 0, endTime);
+	}
 }
 
 void KeyframeAnimation::SortAddKeyframe(Keyframe keyframe)
@@ -108,7 +136,7 @@ void KeyframeAnimation::UpdateAnimationDuration()
 
 bool KeyframeAnimation::IsTimeBetweenKeyframes(float time, Keyframe first, Keyframe second)
 {
-	return (time > first.time) && (time < second.time);
+	return (time >= first.time) && (time <= second.time);
 }
 
 float KeyframeAnimation::GetPercentageBetweenKeyframes(float time, Keyframe first, Keyframe second)
@@ -116,14 +144,23 @@ float KeyframeAnimation::GetPercentageBetweenKeyframes(float time, Keyframe firs
 	return (time-first.time)/(second.time-first.time);
 }
 
-Keyframe KeyframeAnimation::GenerateInterpolatedKeyframe(float time, Keyframe first, Keyframe second, KeyFrameEasing ease)
+Keyframe KeyframeAnimation::GenerateInterpolatedKeyframe(float time, Keyframe first, Keyframe second, MathUtils::AnimationCurve curve)
 {
-	Keyframe result;
+	Keyframe result = Keyframe(
+		time,
+		first.animationCurve,
+		MathUtils::Lerp<tyga::Vector3>(first.position, second.position, time, curve),
+		MathUtils::Slerp(first.rotation, second.rotation, time, curve),
+		MathUtils::Lerp<tyga::Vector3>(first.scale, second.scale, time, curve)
+	);
+	return result;
+	/*
 	switch (ease)
 	{
 	case Linear:
 		result = Keyframe(
 			time,
+			first.animationCurve,
 			MathUtils::Lerp<tyga::Vector3>(first.position, second.position, time, MathUtils::EaseType::Linear),
 			MathUtils::Slerp(first.rotation, second.rotation, time, MathUtils::EaseType::Linear),
 			MathUtils::Lerp<tyga::Vector3>(first.scale, second.scale, time, MathUtils::EaseType::Linear)
@@ -132,6 +169,7 @@ Keyframe KeyframeAnimation::GenerateInterpolatedKeyframe(float time, Keyframe fi
 	case EaseIn:
 		result = Keyframe(
 			time,
+			first.animationCurve,
 			MathUtils::Lerp<tyga::Vector3>(first.position, second.position, time, MathUtils::EaseType::EaseIn),
 			MathUtils::Slerp(first.rotation, second.rotation, time, MathUtils::EaseType::EaseIn),
 			MathUtils::Lerp<tyga::Vector3>(first.scale, second.scale, time, MathUtils::EaseType::EaseIn)
@@ -140,6 +178,7 @@ Keyframe KeyframeAnimation::GenerateInterpolatedKeyframe(float time, Keyframe fi
 	case EaseOut:
 		result = Keyframe(
 			time,
+			first.animationCurve,
 			MathUtils::Lerp<tyga::Vector3>(first.position, second.position, time, MathUtils::EaseType::EaseOut),
 			MathUtils::Slerp(first.rotation, second.rotation, time, MathUtils::EaseType::EaseOut),
 			MathUtils::Lerp<tyga::Vector3>(first.scale, second.scale, time, MathUtils::EaseType::EaseOut)
@@ -148,6 +187,7 @@ Keyframe KeyframeAnimation::GenerateInterpolatedKeyframe(float time, Keyframe fi
 	case Smooth:
 		result = Keyframe(
 			time,
+			first.animationCurve,
 			MathUtils::Lerp<tyga::Vector3>(first.position, second.position, time, MathUtils::EaseType::Smooth),
 			MathUtils::Slerp(first.rotation, second.rotation, time, MathUtils::EaseType::Smooth),
 			MathUtils::Lerp<tyga::Vector3>(first.scale, second.scale, time, MathUtils::EaseType::Smooth)
@@ -156,6 +196,7 @@ Keyframe KeyframeAnimation::GenerateInterpolatedKeyframe(float time, Keyframe fi
 	case Clamp:
 		result = Keyframe(
 		time,
+			first.ease,
 		first.position,
 		first.rotation,
 		first.scale
@@ -164,13 +205,14 @@ Keyframe KeyframeAnimation::GenerateInterpolatedKeyframe(float time, Keyframe fi
 	default:
 		result = Keyframe(
 			time,
+			first.ease,
 			MathUtils::Lerp<tyga::Vector3>(first.position, second.position, time, MathUtils::EaseType::Linear),
 			MathUtils::Slerp(first.rotation, second.rotation, time, MathUtils::EaseType::Linear),
 			MathUtils::Lerp<tyga::Vector3>(first.scale, second.scale, time, MathUtils::EaseType::Linear)
 		);
 		break;
-	}
-	return result;
+	}*/
+	
 
 }
 
