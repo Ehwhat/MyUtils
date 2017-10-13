@@ -12,6 +12,8 @@ namespace ActorUtils
 	void AddModelToActor(std::shared_ptr<tyga::ActorDelegate> actor ,std::string modelIdentifier, tyga::Vector3 colour);
 	void AddModelToActor(std::shared_ptr<tyga::Actor> actor, std::string modelIdentifier, tyga::Vector3 colour);
 	void AddModelToActor(std::shared_ptr<tyga::Actor> actor, std::string modelIdentifier, std::shared_ptr<tyga::GraphicsMaterial> material);
+
+	void AddModelToActor(std::shared_ptr<tyga::Actor> actor, std::shared_ptr<tyga::GraphicsMesh> mesh, std::shared_ptr<tyga::GraphicsMaterial> material);
 	std::shared_ptr<tyga::Actor> AddActorToWorld();
 	std::shared_ptr<tyga::HActor> AddHActorToWorld(bool isRoot = false);
 

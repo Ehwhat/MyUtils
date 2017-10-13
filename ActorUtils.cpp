@@ -52,6 +52,16 @@ void ActorUtils::AddModelToActor(std::shared_ptr<tyga::Actor> actor, std::string
 	actor->attachComponent(model);
 }
 
+void ActorUtils::AddModelToActor(std::shared_ptr<tyga::Actor> actor, std::shared_ptr<tyga::GraphicsMesh> mesh, std::shared_ptr<tyga::GraphicsMaterial> material)
+{
+	auto graphics = tyga::GraphicsCentre::defaultCentre();
+	auto model = graphics->newModel();
+	model->material = material;
+	model->mesh = mesh;
+
+	actor->attachComponent(model);
+}
+
 std::shared_ptr<tyga::Actor> ActorUtils::AddActorToWorld()
 {
 	auto world = tyga::ActorWorld::defaultWorld();
