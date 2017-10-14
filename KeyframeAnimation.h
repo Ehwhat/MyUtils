@@ -6,14 +6,25 @@
 #include <string>
 #include <functional>
 
+/**
+*	Keyframe Animation system, developed by Joshua Stevenson (Q5120984), 2017
+*	Allows for animation of scalar values over a variable amount of keyframes using AnimationCurves for easing
+*	Can also use clamping styles for looping or 'PingPong' animations
+*	Can use basic event system for more complex animations (Still working on this so don't expect any wonders yet)
+*
+*	TODO:
+*	Develop event system to be more workable
+*	Maybe rewrite curve calulation to store each keyframes in and out tangents and calulate curves from that?
+*/
+
 enum AnimationClampType {
 	Single,
 	Loop,
 	PingPong
 };
-
-
-
+/**
+*	Keyframe class, stores default scalars, the animation curve assoisated with it and animation events
+*/
 class Keyframe {
 public:
 

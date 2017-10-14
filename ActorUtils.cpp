@@ -123,7 +123,6 @@ std::shared_ptr<tyga::GraphicsMesh> ActorUtils::GraphicsShare::GetMeshFromIdenti
 		_sharedMeshes.emplace(name, mesh);
 		return mesh;
 	}
-	std::cout << "Found Shared Mesh";
 	return search->second;
 }
 
@@ -131,7 +130,7 @@ std::shared_ptr<tyga::GraphicsMaterial> ActorUtils::GraphicsShare::GetMaterial(s
 {
 	auto search = _sharedMaterials.find(name);
 	if (search == _sharedMaterials.end()) {
-		//Not found a mesh
+		//Not found a material
 		auto graphics = tyga::GraphicsCentre::defaultCentre();
 		std::shared_ptr<tyga::GraphicsMaterial> material = graphics->newMaterial();
 		material->colour = colour;
@@ -145,7 +144,7 @@ std::shared_ptr<tyga::GraphicsMaterial> ActorUtils::GraphicsShare::GetMaterial(s
 {
 	auto search = _sharedMaterials.find(name);
 	if (search == _sharedMaterials.end()) {
-		//Not found a mesh
+		//Not found a material
 		auto graphics = tyga::GraphicsCentre::defaultCentre();
 		std::shared_ptr<tyga::GraphicsMaterial> material = graphics->newMaterial();
 		material->texture = materialName;

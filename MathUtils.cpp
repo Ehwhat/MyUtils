@@ -4,30 +4,30 @@
 
 namespace MathUtils {
 
-	double DegreesToRadians(double degrees) {
+	float DegreesToRadians(float degrees) {
 		return degrees * _pi / 180;
 	}
 
-	double RadiansToDegrees(double radians) {
+	float RadiansToDegrees(float radians) {
 		return radians * 180 / _pi;
 	}
 
-	double MilesPerHourToMetersPerMinute(double miles)
+	float MilesPerHourToMetersPerMinute(float miles)
 	{
 		return miles * 1609; // Super magic number is conversion rate, don't worry about it
 	}
 
-	double MPHtoRotationsPerMinute(double miles, double radius)
+	float MPHtoRotationsPerMinute(float miles, float radius)
 	{
-		return MilesPerHourToMetersPerMinute(miles) / (radius*M_PI * 2);
+		return MilesPerHourToMetersPerMinute(miles) / (radius* _pi * 2);
 	}
 
-	double QuatDotProduct(tyga::Quaternion lhs, tyga::Quaternion rhs)
+	float QuatDotProduct(tyga::Quaternion lhs, tyga::Quaternion rhs)
 	{
 		return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
 	}
 
-	tyga::Vector3 SphericalPositionToVectorPosition(double theta, double axion, double radius)
+	tyga::Vector3 SphericalPositionToVectorPosition(float theta, float axion, float radius)
 	{
 		return tyga::Vector3(
 			radius * sin(theta)*cos(axion),
@@ -36,24 +36,24 @@ namespace MathUtils {
 		);
 	}
 
-	double GetSpeedFromVelocity(tyga::Vector3 velocity){
+	float GetSpeedFromVelocity(tyga::Vector3 velocity){
 		return tyga::length(velocity);
 	}
-	double GetDistanceBetweenVectors(tyga::Vector3 a, tyga::Vector3 b)
+	float GetDistanceBetweenVectors(tyga::Vector3 a, tyga::Vector3 b)
 	{
 		return tyga::length(a - b);
 	}
-	double GetAngleBetweenVectors(tyga::Vector3 a, tyga::Vector3 b)
+	float GetAngleBetweenVectors(tyga::Vector3 a, tyga::Vector3 b)
 	{
-		double dot = tyga::dot(a, b)/(tyga::length(a) * tyga::length(b));
-		return std::acos(dot);
+		float dot = tyga::dot(a, b)/(tyga::length(a) * tyga::length(b));
+		return std::acosf(dot);
 	}
 
 	tyga::Vector3 GetAxisOfRotationBetweenVectors(tyga::Vector3 a, tyga::Vector3 b) {
 		return tyga::cross(a, b);
 	}
 
-	double GetDistanceOfPointPerpendicularToPlane(tyga::Vector3 point, Plane plane)
+	float GetDistanceOfPointPerpendicularToPlane(tyga::Vector3 point, Plane plane)
 	{
 		return tyga::dot(plane.normal, (point - plane.point));
 	}
@@ -83,9 +83,9 @@ namespace MathUtils {
 
 	tyga::Vector3 GetScaleVectorFromMatrix(tyga::Matrix4x4 m)
 	{
-		double sx = tyga::length(tyga::Vector3(m._00, m._10, m._20));
-		double sy = tyga::length(tyga::Vector3(m._01, m._11, m._21));
-		double sz = tyga::length(tyga::Vector3(m._02, m._12, m._22));
+		float sx = tyga::length(tyga::Vector3(m._00, m._10, m._20));
+		float sy = tyga::length(tyga::Vector3(m._01, m._11, m._21));
+		float sz = tyga::length(tyga::Vector3(m._02, m._12, m._22));
 		return tyga::Vector3(sx, sy, sz);
 	}
 
@@ -113,9 +113,9 @@ namespace MathUtils {
 	tyga::Vector3 GetEularFromMatrix(tyga::Matrix4x4 m)
 	{
 		m = GetRotationMatrixFromMatrix(m);
-		double sy = std::sqrt(m._00*m._00 + m._10 * m._10);
+		float sy = std::sqrt(m._00*m._00 + m._10 * m._10);
 		bool isSingular = sy <  1e-6;
-		double x, y, z;
+		float x, y, z;
 		if (isSingular) {
 			x = std::atan2(-m._12, m._11);
 			y = std::atan2(-m._20, sy);
@@ -131,7 +131,7 @@ namespace MathUtils {
 
 	tyga::Matrix4x4 GetMatrixFromEular(tyga::Vector3 eular)
 	{
-		eular *= M_PI / 180;
+		eular *= _pi / 180;
 		tyga::Matrix4x4 x = tyga::Matrix4x4(
 			1, 0, 0, 0,
 			0, cosf(eular.x), -sinf(eular.x), 0,
@@ -169,9 +169,9 @@ namespace MathUtils {
 
 	bool IsInsideTriangle(tyga::Vector2 point, Triangle tri)
 	{
-		double area = 0.5 *(-tri.p1.y*tri.p2.x + tri.p0.y*(-tri.p1.x + tri.p2.x) + tri.p0.x*(tri.p1.y - tri.p2.y) + tri.p1.x*tri.p2.y);
-		double s = 1 / (2 * area)*(tri.p0.y*tri.p2.x - tri.p0.x*tri.p2.y + (tri.p2.y - tri.p0.y)*point.x + (tri.p0.x - tri.p2.x)*point.y);
-		double t = 1 / (2 * area)*(tri.p0.x*tri.p1.y - tri.p0.y*tri.p1.x + (tri.p0.y - tri.p1.y)*point.x + (tri.p1.x - tri.p0.x)*point.y);
+		float area = 0.5f *(-tri.p1.y*tri.p2.x + tri.p0.y*(-tri.p1.x + tri.p2.x) + tri.p0.x*(tri.p1.y - tri.p2.y) + tri.p1.x*tri.p2.y);
+		float s = 1 / (2 * area)*(tri.p0.y*tri.p2.x - tri.p0.x*tri.p2.y + (tri.p2.y - tri.p0.y)*point.x + (tri.p0.x - tri.p2.x)*point.y);
+		float t = 1 / (2 * area)*(tri.p0.x*tri.p1.y - tri.p0.y*tri.p1.x + (tri.p0.y - tri.p1.y)*point.x + (tri.p1.x - tri.p0.x)*point.y);
 		return (s > 0 && t > 0 && (1 - s - t) > 0);
 	}
 
@@ -190,8 +190,8 @@ namespace MathUtils {
 		}
 
 		dotProduct = std::max(-1.f, std::min(dotProduct, 1.f));
-		double angleBetweenInputs = acosf(dotProduct);
-		double angleToResult = angleBetweenInputs*t;
+		float angleBetweenInputs = acosf(dotProduct);
+		float angleToResult = angleBetweenInputs*t;
 
 		result = rhs - lhs*dotProduct;
 		tyga::unit(result);
@@ -199,9 +199,9 @@ namespace MathUtils {
 		return lhs*cosf(angleToResult) + result*sinf(angleToResult);
 	}
 	
-	double SinWave(double frequency, double amplitude, double phase, double inital, double time)
+	float SinWave(float frequency, float amplitude, float phase, float inital, float time)
 	{
-		return inital + sin(2*M_PI*frequency*time + phase)*amplitude;
+		return inital + sinf(2*_pi*frequency*time + phase)*amplitude;
 	}
 	
 
@@ -238,58 +238,4 @@ namespace MathUtils {
 		}
 		return output;
 	}
-	/*
-	float LinearTime(float t)
-	{
-		return t;
-	}
-
-	float SmoothStepTime(float t)
-	{
-		return ((t) * (t) * (3 - 2 * (t))); //t*t*t * (t * (6.f*t - 15.f) + 10.f);
-	}
-
-	float EaseOutTime(float t) {
-		return sinf(t*M_PI*0.5f);
-	}
-
-	float EaseInTime(float t) {
-		return 1.f - cosf(t*M_PI*0.5f);
-	}
-
-	float SplineTime(float t, float p0, float p1, float p2, float p3)
-	{
-		return 0.5f * (
-			(2 * p1) +
-			(-p0 + p2) * t +
-			(2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t +
-			(-p0 + 3 * p1 - 3 * p2 + p3) * t * t * t
-			);
-	}
-
-	
-	float EaseTime(EaseType type, float time) {
-		switch (type)
-		{
-		case Linear:
-			return LinearTime(time);
-			break;
-		case EaseIn:
-			return EaseInTime(time);
-			break;
-		case EaseOut:
-			return EaseOutTime(time);
-			break;
-		case Smooth:
-			return SmoothStepTime(time);
-			break;
-		default:
-			return LinearTime(time);
-			break;
-		}
-	}*/
-
-	
-
-
 }
