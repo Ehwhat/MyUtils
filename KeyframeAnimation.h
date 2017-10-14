@@ -4,6 +4,7 @@
 #include <tyga\Math.hpp>
 #include <vector>
 #include <string>
+#include <functional>
 
 enum AnimationClampType {
 	Single,
@@ -13,13 +14,14 @@ enum AnimationClampType {
 
 
 
-struct Keyframe {
+class Keyframe {
 public:
 
 	tyga::Vector3 position;
 	tyga::Quaternion rotation;
 	tyga::Vector3 scale;
 	MathUtils::AnimationCurve animationCurve = MathUtils::linearCurve;
+	
 	//KeyFrameEasing ease;
 
 	float time;
@@ -35,6 +37,16 @@ public:
 		animationCurve = curve;
 	}
 
+	void AddSetKeyframeFunction(std::function<void(float)> function) {
+		keyframeFunction = function;
+	}
+
+	void KeyframeFunction(float t) {
+		if (keyframeFunction) {
+			keyframeFunction(t);
+		}
+	}
+
 	Keyframe CombineKeyframes(Keyframe rhs) {
 		Keyframe result = Keyframe(
 			time,
@@ -47,6 +59,9 @@ public:
 	}
 
 private:
+
+	std::function<void(float time)> keyframeFunction;
+
 };
 
 class KeyframeAnimation
@@ -60,7 +75,7 @@ public:
 	~KeyframeAnimation();
 
 	Keyframe AddKeyframe(float _time, MathUtils::AnimationCurve _curve = MathUtils::linearCurve, tyga::Vector3 _position = tyga::Vector3(), tyga::Quaternion _rotation = tyga::Quaternion(), tyga::Vector3 _scale = tyga::Vector3());
-	Keyframe AddKeyframe(Keyframe keyframe);
+	Keyframe AddKeyframe(Keyframe keyframe, std::function<void(float time)> keyFunction = nullptr);
 
 	Keyframe GetInterpolatedKeyframe(float time);
 	

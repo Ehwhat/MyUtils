@@ -205,6 +205,11 @@ namespace MathUtils {
 	}
 	
 
+	std::string ToStringVector2(tyga::Vector2 v)
+	{
+		return "(X: " + std::to_string(v.x) + " Y: " + std::to_string(v.y) + ")";
+	}
+
 	std::string ToStringVector3(tyga::Vector3 v) {
 		return "(X: " + std::to_string(v.x) + " Y: " + std::to_string(v.y) + " Z: " + std::to_string(v.z) + ")";
 	}

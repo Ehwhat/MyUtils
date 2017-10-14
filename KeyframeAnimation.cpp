@@ -24,8 +24,11 @@ Keyframe KeyframeAnimation::AddKeyframe(float _time, MathUtils::AnimationCurve _
 	return keyframe;
 }
 
-Keyframe KeyframeAnimation::AddKeyframe(Keyframe keyframe)
+Keyframe KeyframeAnimation::AddKeyframe(Keyframe keyframe, std::function<void(float time)> keyFunction)
 {
+	if (keyFunction) {
+		keyframe.AddSetKeyframeFunction(keyFunction);
+	}
 	SortAddKeyframe(keyframe);
 	return keyframe;
 }
@@ -45,9 +48,12 @@ Keyframe KeyframeAnimation::GetInterpolatedKeyframe(float time)
 		Keyframe currentKeyFrame = keyframes[i];
 		Keyframe nextKeyFrame = keyframes[i + 1];
 		if (IsTimeBetweenKeyframes(time,currentKeyFrame, nextKeyFrame)) {
+
 			float t = GetPercentageBetweenKeyframes(time, currentKeyFrame, nextKeyFrame);
+			
+			nextKeyFrame.KeyframeFunction(t-1);
+			currentKeyFrame.KeyframeFunction(t);
 			t = MathUtils::Clamp<float>(t, 0, 1);
-			//std::cout << t << "\n";
 			Keyframe result = GenerateInterpolatedKeyframe(t, currentKeyFrame, nextKeyFrame, currentKeyFrame.animationCurve);
 			return result;
 		}
@@ -136,7 +142,7 @@ void KeyframeAnimation::UpdateAnimationDuration()
 
 bool KeyframeAnimation::IsTimeBetweenKeyframes(float time, Keyframe first, Keyframe second)
 {
-	return (time >= first.time) && (time <= second.time);
+	return (time > first.time) && (time <= second.time);
 }
 
 float KeyframeAnimation::GetPercentageBetweenKeyframes(float time, Keyframe first, Keyframe second)
@@ -148,7 +154,7 @@ Keyframe KeyframeAnimation::GenerateInterpolatedKeyframe(float time, Keyframe fi
 {
 	Keyframe result = Keyframe(
 		time,
-		first.animationCurve,
+		curve,
 		MathUtils::Lerp<tyga::Vector3>(first.position, second.position, time, curve),
 		MathUtils::Slerp(first.rotation, second.rotation, time, curve),
 		MathUtils::Lerp<tyga::Vector3>(first.scale, second.scale, time, curve)
