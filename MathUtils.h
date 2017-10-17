@@ -174,6 +174,21 @@ namespace MathUtils {
 			t * t * t * p3;
 		}
 
+		T GetCubicFirstDerivative(float t) {
+			t = Clamp<float>(t, 0, 1);
+			float nt = 1.f - t;
+			return
+				3.f * nt * nt * (p1 - p0) +
+				6.f * nt * t * (p2 - p1) +
+				3.f * t * t * (p3 - p2);
+		}
+
+		T GetCubicSecondDerivative(float t) {
+			t = Clamp<float>(t, 0, 1);
+			return
+				2 * (p2 - (2 * p1) + p0);
+		}
+
 	};
 
 
@@ -457,6 +472,10 @@ namespace MathUtils {
 
 	tyga::Quaternion GetQuatFromEular(tyga::Vector3 v);
 
+	tyga::Quaternion getQuatFromDirection(tyga::Vector3 v, tyga::Vector3 up = tyga::Vector3(0, 0, 1));
+
+	tyga::Matrix4x4 getMatrixFromDirection(tyga::Vector3 v, tyga::Vector3 up = tyga::Vector3(0,1,0));
+
 	tyga::Vector3 RotateVectorByQuat(tyga::Vector3 v, tyga::Quaternion q);
 
 	tyga::Vector3 GetForwardVectorFromMatrix(tyga::Matrix4x4 m);
@@ -464,6 +483,7 @@ namespace MathUtils {
 	tyga::Vector3 GetUpVectorFromMatrix(tyga::Matrix4x4 m);
 
 	tyga::Matrix4x4 CombineMatrices(tyga::Matrix4x4 first, tyga::Matrix4x4 second);
+	tyga::Vector3 MultiplyVectors(tyga::Vector3 lhs, tyga::Vector3 rhs);
 
 	bool IsInsideTriangle(tyga::Vector2 point, Triangle tri);
 

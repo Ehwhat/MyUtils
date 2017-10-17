@@ -221,6 +221,33 @@ namespace MathUtils {
 
 	}
 
+	//tyga::Quaternion getQuatFromDirection(tyga::Vector3 v, tyga::Vector3 up)
+	//{
+	//	return tyga::Quaternion();
+	//}
+
+	tyga::Quaternion getQuatFromDirection(tyga::Vector3 v, tyga::Vector3 up)
+	{
+		float d = tyga::dot(v, up);
+		tyga::Vector3 axis = tyga::cross(v, up);
+		float qw = sqrtf((tyga::length(v)*tyga::length(v))*(tyga::length(up)*tyga::length(up))) + d;
+		if (qw < 0.0001) { // vectors are 180 degrees apart
+			return tyga::unit(tyga::Quaternion(0, -v.z, v.y, v.x));
+		}
+		return tyga::unit(tyga::Quaternion(qw, axis.x, axis.y, axis.z));
+	}
+
+	tyga::Matrix4x4 getMatrixFromDirection(tyga::Vector3 v, tyga::Vector3 up)
+	{
+		const tyga::Vector3 W = tyga::unit(v);
+		const tyga::Vector3 U = tyga::cross(up, W);
+		const tyga::Vector3 V = tyga::cross(U, W);
+		return tyga::Matrix4x4(U.x, U.y, U.z, 0,
+			V.x, V.y, V.z, 0,
+			W.x, W.y, W.z, 0,
+			0, 0, 0, 1);
+	}
+
 	tyga::Vector3 RotateVectorByQuat(tyga::Vector3 v, tyga::Quaternion q)
 	{
 		tyga::Vector3 qv = tyga::Vector3(q.x, q.y, q.z);
@@ -247,6 +274,11 @@ namespace MathUtils {
 	tyga::Matrix4x4 CombineMatrices(tyga::Matrix4x4 first, tyga::Matrix4x4 second)
 	{
 		return first * second;
+	}
+
+	tyga::Vector3 MultiplyVector3(tyga::Vector3 lhs, tyga::Vector3 rhs)
+	{
+		return tyga::Vector3(lhs.x*rhs.x, lhs.y*rhs.y, lhs.z*lhs.z);
 	}
 
 	bool IsInsideTriangle(tyga::Vector2 point, Triangle tri)
