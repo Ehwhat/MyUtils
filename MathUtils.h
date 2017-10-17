@@ -186,11 +186,19 @@ namespace MathUtils {
 	*/
 	struct AnimationCurve {
 		
-		
 
 		AnimationCurve(tyga::Vector2 _p1, tyga::Vector2 _p2) : spline(Spline<tyga::Vector2>(tyga::Vector2(0,0),_p1,_p2,tyga::Vector2(1,1))) {
 			DeterminePoints();
 		}
+
+		AnimationCurve(tyga::Vector2 _p0, tyga::Vector2 _p1, tyga::Vector2 _p2, tyga::Vector2 _p3) : spline(Spline<tyga::Vector2>(_p0, _p1, _p2, _p3)) {
+			DeterminePoints();
+		}
+
+		AnimationCurve() : spline(Spline<tyga::Vector2>(tyga::Vector2(), tyga::Vector2(), tyga::Vector2(), tyga::Vector2())) {
+			DeterminePoints();
+		}
+
 		/**
 		* Catmull-Rom Interpolation
 		*
@@ -267,7 +275,7 @@ namespace MathUtils {
 
 			}
 		}
-		int amountOfPoints = 100;
+		int amountOfPoints = 1000;
 		std::vector<tyga::Vector2> points;
 		Spline<tyga::Vector2> spline;
 
@@ -284,7 +292,7 @@ namespace MathUtils {
 	* @return Value interpolated between lhs and rhs by t
 	*/
 	template<class T>
-	T Lerp(T lhs, T rhs, float t, MathUtils::AnimationCurve animationCurve)
+	T Lerp(T lhs, T rhs, float t, AnimationCurve animationCurve)
 	{
 		t = animationCurve.GetAnimationCurveOutput(t);
 		return (1 - t)*lhs + t * rhs;
@@ -301,7 +309,7 @@ namespace MathUtils {
 	* @param animationCurve AnimationCurve to affect t by, used to create eased slerps
 	* @return Value interpolated between lhs and rhs by t
 	*/
-	tyga::Quaternion Slerp(tyga::Quaternion lhs, tyga::Quaternion rhs, float t, MathUtils::AnimationCurve animationCurve);
+	tyga::Quaternion Slerp(tyga::Quaternion lhs, tyga::Quaternion rhs, float t, AnimationCurve animationCurve);
 
 	/**
 	* PI constant, redundent.
@@ -309,7 +317,7 @@ namespace MathUtils {
 	const float _pi = 3.14159265358979323846f;
 
 	// typical curves used for animaion, all curves are cubic in nature.
-
+	const AnimationCurve clampCurve = AnimationCurve();
 	const AnimationCurve linearCurve = AnimationCurve(
 		tyga::Vector2(0.f, 0.f),
 		tyga::Vector2(1.f, 1.f)
