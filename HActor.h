@@ -35,6 +35,8 @@ namespace tyga {
 
 		virtual void hActorClockTick(std::shared_ptr<tyga::HActor> actor) {}
 
+		virtual void hActorLateClockTick(std::shared_ptr<tyga::HActor> actor){}
+
 
 		void AddChild(std::shared_ptr<tyga::HActor> hActor);
 
@@ -52,7 +54,7 @@ namespace tyga {
 
 	private:
 
-
+		std::shared_ptr<tyga::HActor> _parent;
 		std::shared_ptr<tyga::HActor> _this;
 
 		virtual void actorClockTick(std::shared_ptr<tyga::Actor> actor) override;

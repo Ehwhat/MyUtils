@@ -14,9 +14,11 @@ namespace tyga {
 			hActorClockTick(_this);
 			Matrix4x4 resultingTransfom = GetResultingTransform();
 			this->Actor()->setTransformation(resultingTransfom);
+			hActorLateClockTick(_this);
+			applyTransformToChildren(resultingTransfom);
 		}
-		Matrix4x4 resultingTransfom = GetResultingTransform();
-		applyTransformToChildren(resultingTransfom);
+		//Matrix4x4 resultingTransfom = GetResultingTransform();
+		
 	}
 
 	void tyga::HActor::actorDidEnterWorld(std::shared_ptr<tyga::Actor> actor)
@@ -31,6 +33,7 @@ namespace tyga {
 	}
 
 	void tyga::HActor::AddChild(std::shared_ptr<tyga::HActor> actor) {
+		actor->_parent = _this;
 		children.push_back(actor);
 	}
 
@@ -65,6 +68,7 @@ namespace tyga {
 			child->hActorClockTick(child);
 			tyga::Matrix4x4 result = child->GetResultingTransform();
 			child->Actor()->setTransformation(result);
+			child->applyTransformToChildren(result);
 		}
 	}
 

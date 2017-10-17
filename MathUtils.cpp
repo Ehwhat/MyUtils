@@ -151,7 +151,7 @@ namespace MathUtils {
 			0, 0, 1, 0,
 			0, 0, 0, 1
 		);
-		return z*y*x;
+		return z*x*y;
 	}
 
 	tyga::Matrix4x4 GetMatrixFromQuat(tyga::Quaternion q)
@@ -160,6 +160,88 @@ namespace MathUtils {
 			2 * q.x*q.y - 2 * q.z*q.w, 1 - 2 * (q.x*q.x) - 2 * (q.z*q.z), 2 * q.y*q.z + 2 * q.x*q.w, 0,
 			2 * q.x*q.z + 2 * q.y*q.w, 2 * q.y*q.z - 2 * q.x*q.w, 1 - 2 * (q.x*q.x) - 2 * (q.y*q.y), 0,
 			0, 0, 0, 1);
+	}
+
+	tyga::Quaternion GetQuatFromMatrix(tyga::Matrix4x4 m) //Here we go..
+	{
+		tyga::Quaternion result;
+		float diagonal = m._00 = m._11 + m._22; //Need to test so we can avoid division errors
+		if (diagonal > 0) {
+			float s = 0.5f / sqrtf(diagonal + 1.0f);
+			result.w = 0.25f / s;
+			result.x = (m._21 - m._12) * s;
+			result.y = (m._02 - m._20) * s;
+			result.z = (m._10 - m._01) * s;
+		}
+		else {
+			if (m._00 > m._11 && m._00 > m._22) {
+				float s = 2.0f * sqrtf(1.0f + m._00 - m._11 - m._22);
+				result.w = (m._21 - m._12) / s;
+				result.x = 0.25f * s;
+				result.y = (m._01 + m._10) / s;
+				result.z = (m._02 + m._20) / s;
+			}
+			else if (m._11 > m._22) {
+				float s = 2.0f * sqrtf(1.0f + m._11 - m._00 - m._22);
+				result.w = (m._02 - m._20) / s;
+				result.x = (m._01 + m._10) / s;
+				result.y = 0.25f * s;
+				result.z = (m._12 + m._21) / s;
+			}
+			else {
+				float s = 2.0f * sqrtf(1.0f + m._22 - m._00 - m._11);
+				result.w = (m._10 - m._01) / s;
+				result.x = (m._02 + m._20) / s;
+				result.y = (m._12 + m._21) / s;
+				result.z = 0.25f * s;
+			}
+		}
+		return result;
+	}
+
+	tyga::Quaternion GetQuatFromEular(tyga::Vector3 v)
+	{
+		tyga::Quaternion result;
+
+		v *= _pi / 180;
+
+		float cz = cosf(v.z * 0.5f);
+		float sz = sinf(v.z * 0.5f);
+		float cy = cosf(v.y * 0.5f);
+		float sy = sinf(v.y * 0.5f);
+		float cx = cosf(v.x * 0.5f);
+		float sx = sinf(v.x * 0.5f);
+
+		result.w = cz * cx * cy + sz * sx * sy;
+		result.x = cz * sx * cy + sz * cx * sy;
+		result.y = cz * cx * sy + sz * sx * cy;
+		result.z = sz * cx * cy + cz * sx * sy;
+
+		return result;
+
+	}
+
+	tyga::Vector3 RotateVectorByQuat(tyga::Vector3 v, tyga::Quaternion q)
+	{
+		tyga::Vector3 qv = tyga::Vector3(q.x, q.y, q.z);
+		float scalar = q.w;
+
+		return 2.0f * tyga::dot(qv, v) * qv + (scalar*scalar - tyga::dot(qv, qv)) * v + 2.0f * scalar * tyga::cross(qv, v);
+	}
+
+	tyga::Vector3 GetForwardVectorFromMatrix(tyga::Matrix4x4 m)
+	{
+		return -tyga::Vector3(m._02,m._12,m._22);
+	}
+
+	tyga::Vector3 GetRightVectorFromMatrix(tyga::Matrix4x4 m)
+	{
+		return tyga::Vector3(m._00, m._10, m._20);
+	}
+
+	tyga::Vector3 GetUpVectorFromMatrix(tyga::Matrix4x4 m)
+	{
+		return tyga::Vector3(m._01, m._11, m._21);
 	}
 
 	tyga::Matrix4x4 CombineMatrices(tyga::Matrix4x4 first, tyga::Matrix4x4 second)

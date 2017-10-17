@@ -445,6 +445,16 @@ namespace MathUtils {
 	*/
 	tyga::Matrix4x4 GetMatrixFromQuat(tyga::Quaternion q);
 
+	tyga::Quaternion GetQuatFromMatrix(tyga::Matrix4x4 m);
+
+	tyga::Quaternion GetQuatFromEular(tyga::Vector3 v);
+
+	tyga::Vector3 RotateVectorByQuat(tyga::Vector3 v, tyga::Quaternion q);
+
+	tyga::Vector3 GetForwardVectorFromMatrix(tyga::Matrix4x4 m);
+	tyga::Vector3 GetRightVectorFromMatrix(tyga::Matrix4x4 m);
+	tyga::Vector3 GetUpVectorFromMatrix(tyga::Matrix4x4 m);
+
 	tyga::Matrix4x4 CombineMatrices(tyga::Matrix4x4 first, tyga::Matrix4x4 second);
 
 	bool IsInsideTriangle(tyga::Vector2 point, Triangle tri);

@@ -105,6 +105,15 @@ std::shared_ptr<tyga::HActor> ActorUtils::AddHActorToWorld(tyga::Vector3 pos, ty
 	return actor;
 }
 
+std::shared_ptr<tyga::HActor> ActorUtils::AddHActorToWorld(tyga::Vector3 pos, tyga::Vector3 rot, std::shared_ptr<tyga::GraphicsMesh> mesh, std::shared_ptr<tyga::GraphicsMaterial> material, bool isRoot)
+{
+	auto actor = std::make_shared<tyga::HActor>(tyga::HActor());
+	actor->SetOffsetTransform(MathUtils::GetMatrixFromEular(rot)*MathUtils::GetMatrixFromTranslationVector(pos));
+	AddHActorToWorld(actor, isRoot);
+	AddModelToActor(actor->Actor(), mesh, material);
+	return actor;
+}
+
 std::shared_ptr<tyga::HActor> ActorUtils::AddHActorToWorld(tyga::Vector3 pos, tyga::Vector3 rot, bool isRoot)
 {
 	auto actor = std::make_shared<tyga::HActor>(tyga::HActor());
