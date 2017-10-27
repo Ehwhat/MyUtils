@@ -43,6 +43,8 @@ namespace Animation {
 	};
 
 	enum AnimationStateClampType {
+		NoLength,
+		RunOnce,
 		Single,
 		Loop,
 		PingPong
@@ -79,10 +81,14 @@ namespace Animation {
 		}
 
 		void Execute(OwnerType object,float deltaTime) {
-			if (status != AnimationStateStatus::Complete) {
+			if (status != AnimationStateStatus::Complete && clamp != AnimationStateClampType::NoLength) {
 				status = AnimationStateStatus::CurrentlyRunning;
 				if (stateFunction) {
-					stateFunction(object, currentTime);
+					stateFunction(object, (currentTime/stateDuration) );
+				}
+				if (clamp == AnimationStateClampType::RunOnce) {
+					status = AnimationStateStatus::Complete;
+					return;
 				}
 				HandleTime(deltaTime);
 			}
@@ -132,24 +138,33 @@ namespace Animation {
 
 		void HandleTime(float deltaTime) {
 			currentTime += deltaTime;
-			if (currentTime > stateDuration) {
-				switch (clamp)
-				{
-				case AnimationStateClampType::Single:
+			actualTime += deltaTime;
+			switch (clamp)
+			{
+			case AnimationStateClampType::Single:
+				if (currentTime > stateDuration) {
 					status = AnimationStateStatus::Complete;
 					currentTime = stateDuration;
-					break;
-				case AnimationStateClampType::Loop:
-					currentTime = 0;
-					break;
-				default:
-					break;
+
 				}
+				break;
+			case AnimationStateClampType::Loop:
+				if (currentTime > stateDuration) {
+					currentTime = 0;
+				}
+				break;
+			case AnimationStateClampType::PingPong:
+				currentTime = abs(fmodf((actualTime + stateDuration), (stateDuration * 2)) - stateDuration);
+				break;
+			default:
+				break;
 			}
+			
 		}
 
 
 		float currentTime = 0;
+		float actualTime = 0;
 
 	};
 
