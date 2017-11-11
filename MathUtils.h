@@ -147,7 +147,7 @@ namespace MathUtils {
 		* @param t value between 1 - 0
 		* @return point along Catmull-Rom spline by t
 		*/
-		T GetCatmullRomInterpolatedPoint(float t) {
+		T GetCatmullRomInterpolatedPoint(float t) const {
 			t = Clamp<float>(t, 0, 1);
 			return 0.5f * (
 				(2 * p1) +
@@ -164,7 +164,7 @@ namespace MathUtils {
 		* @param t value between 1 - 0
 		* @return point along Cubic Beizer spline by t
 		*/
-		T GetCubicInterpolatedPoint(float t) {
+		T GetCubicInterpolatedPoint(float t) const {
 			t = Clamp<float>(t, 0, 1);
 			float nt = 1.f - t;
 			return
@@ -174,7 +174,7 @@ namespace MathUtils {
 			t * t * t * p3;
 		}
 
-		T GetCubicFirstDerivative(float t) {
+		T GetCubicFirstDerivative(float t) const {
 			t = Clamp<float>(t, 0, 1);
 			float nt = 1.f - t;
 			return
@@ -183,7 +183,7 @@ namespace MathUtils {
 				3.f * t * t * (p3 - p2);
 		}
 
-		T GetCubicSecondDerivative(float t) {
+		T GetCubicSecondDerivative(float t) const {
 			t = Clamp<float>(t, 0, 1);
 			return
 				2 * (p2 - (2 * p1) + p0);
