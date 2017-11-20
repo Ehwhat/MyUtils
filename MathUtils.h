@@ -95,6 +95,27 @@ namespace MathUtils {
 		return initalValue + increment * t;
 	}
 
+	template<class T>
+	inline float DistanceBetween(T lhs, T rhs) {
+		std::string s = std::string("Not Implimented For ");
+		s += typeid(T).name();
+		throw std::exception(s.c_str());
+	}
+	template<>
+	inline float DistanceBetween<tyga::Vector3>(tyga::Vector3 lhs, tyga::Vector3 rhs) {
+		return std::sqrt(
+			(lhs.x - rhs.x) * (lhs.x - rhs.x) +
+			(lhs.y - rhs.y) * (lhs.y - rhs.y) +
+			(lhs.z - rhs.z) * (lhs.z - rhs.z)
+		);
+	}
+	template<>
+	inline float DistanceBetween<tyga::Vector2>(tyga::Vector2 lhs, tyga::Vector2 rhs) {
+		return std::sqrt(
+			(lhs.x - rhs.x) * (lhs.x - rhs.x) +
+			(lhs.y - rhs.y) * (lhs.y - rhs.y)
+		);
+	}
 	
 
 	/**
@@ -128,9 +149,17 @@ namespace MathUtils {
 	template<class T>
 	struct Spline {
 		T p0, p1, p2, p3;
+		float arcLength;
 
-		Spline(const T _p0, const T _p1, const T _p2, const T _p3) : p0(_p0), p1(_p1), p2(_p2), p3(_p3) {
-		
+		int amountOfPoints = 100;
+		std::vector<float> points;
+
+
+		Spline(T _p0, T _p1, T _p2, T _p3) : p0(_p0), p1(_p1), p2(_p2), p3(_p3) {
+			DeterminePoints();
+		}
+
+		~Spline() {
 		}
 
 		/**
@@ -167,6 +196,35 @@ namespace MathUtils {
 			t * t * t * p3;
 		}
 
+		T GetNormalisedCubicPoint(float u) const {
+			float t;
+			int pointsLen = points.size();
+			float targetArcLength = u * points[pointsLen - 1];
+			
+			int low = 0, high = pointsLen, index = 0;
+			while (low < high) {
+				index = low + (((high - low) / 2) | 0);
+				if (points[index] < targetArcLength) {
+					low = index + 1;
+				}
+				else {
+					high = index;
+				}
+			}
+			if (points[index] > targetArcLength) {
+				index--;
+			}
+			float lastLength = points[index];
+			if (lastLength == targetArcLength) {
+				t = index / pointsLen;
+			}
+			else {
+				t = (index + (targetArcLength - lastLength) / (points[index + 1] - lastLength)) / pointsLen;
+			}
+			return GetCubicInterpolatedPoint(t);
+
+		}
+
 		T GetCubicFirstDerivative(float t) const {
 			t = Clamp<float>(t, 0, 1);
 			float nt = 1.f - t;
@@ -181,6 +239,26 @@ namespace MathUtils {
 			return
 				2 * (p2 - (2 * p1) + p0);
 		}
+	private:
+
+		void DeterminePoints() {
+			points.clear();
+			points.reserve(amountOfPoints);
+			
+			T previousPoint = GetCubicInterpolatedPoint(0);
+			float sum = 0;
+
+			for (float i = 0; i < amountOfPoints; i++)
+			{
+				T point = GetCubicInterpolatedPoint((1.f / amountOfPoints)*i);
+				float distance = DistanceBetween(point, previousPoint);
+				sum += distance;
+				points.insert(points.begin() + (int)i, sum);
+				previousPoint = point;
+
+			}
+		}
+		
 
 	};
 
@@ -204,7 +282,7 @@ namespace MathUtils {
 		}
 
 		AnimationCurve() : spline(Spline<tyga::Vector2>(tyga::Vector2(), tyga::Vector2(), tyga::Vector2(), tyga::Vector2())) {
-			DeterminePoints();
+			//DeterminePoints();
 		}
 
 		/**
@@ -251,40 +329,29 @@ namespace MathUtils {
 		*/
 		tyga::Vector2 FindPointForX(float x) {
 			
-			x = Clamp(x, 0.f, 1.f);
+			return tyga::Vector2();
+			/*x = Clamp(x, 0.f, 1.f);
 			tyga::Vector2 prevPoint;
 			tyga::Vector2 currentPoint;
-			if (x < points[0].x) {
-				return points[0];
+			if (x < spline.points[0].x) {
+				return spline.points[0];
 			}
 			for (int i = 0; i < amountOfPoints - 1; i++)
 			{
-				prevPoint = points[i];
-				currentPoint = points[i + 1];
+				prevPoint = spline.points[i];
+				currentPoint = spline.points[i + 1];
 				if (x < currentPoint.x) {
 					float px = (x - prevPoint.x) / (currentPoint.x + prevPoint.x);
 					
 					return Lerp(prevPoint, currentPoint, px);
 				}
 			}
-			return points[amountOfPoints-1];
+			return spline.points[amountOfPoints-1];*/
 		}
 
 		/**
 		* Create determined points along curve
 		*/
-		void DeterminePoints() {
-			points.clear();
-			points.resize(amountOfPoints);
-			for (float i = 0; i < amountOfPoints; i++)
-			{
-				tyga::Vector2 point = GetCubicInterpolatedPoint((1.f / amountOfPoints)*i);
-				points.insert(points.begin() + (int)i,point);
-
-			}
-		}
-		int amountOfPoints = 1000;
-		std::vector<tyga::Vector2> points;
 		Spline<tyga::Vector2> spline;
 
 	};
@@ -306,6 +373,7 @@ namespace MathUtils {
 		return (1 - t)*lhs + t * rhs;
 	}
 
+	
 
 	/**
 	* Slerp function for Quaternions
@@ -477,7 +545,9 @@ namespace MathUtils {
 
 	tyga::Matrix4x4 CombineMatrices(const tyga::Matrix4x4 first, const tyga::Matrix4x4 second);
 
-	bool IsInsideTriangle(const tyga::Vector2 point, const Triangle tri);
+	tyga::Matrix4x4 frenet(const tyga::Vector3 pos, const tyga::Vector3 dir, const tyga::Vector3 up = tyga::Vector3(0, 1, 0));
+
+	bool IsInsideTriangle(tyga::Vector2 point, Triangle tri);
 
 	/**
 	* Generate Sine Wave and sample at time
@@ -490,5 +560,8 @@ namespace MathUtils {
 	* @return result from Sine Wave
 	*/
 	float SinWave(float frequency, float amplitude, float phase, float inital, float time);
+
+
+
 }
 

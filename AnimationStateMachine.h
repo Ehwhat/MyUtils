@@ -142,7 +142,7 @@ namespace Animation {
 			switch (clamp)
 			{
 			case AnimationStateClampType::Single:
-				if (currentTime > stateDuration) {
+				if (currentTime >= stateDuration-0.01f) {
 					status = AnimationStateStatus::Complete;
 					currentTime = stateDuration;
 

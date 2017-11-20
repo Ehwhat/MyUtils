@@ -4,6 +4,8 @@
 
 namespace MathUtils {
 
+	
+
 	float DegreesToRadians(float degrees) {
 		return degrees * _pi / 180;
 	}
@@ -279,6 +281,17 @@ namespace MathUtils {
 	tyga::Vector3 MultiplyVector3(tyga::Vector3 lhs, tyga::Vector3 rhs)
 	{
 		return tyga::Vector3(lhs.x*rhs.x, lhs.y*rhs.y, lhs.z*lhs.z);
+	}
+
+	tyga::Matrix4x4 frenet(const tyga::Vector3 pos, const tyga::Vector3 dir, const tyga::Vector3 up)
+	{
+		const tyga::Vector3 W = tyga::unit(dir);
+		const tyga::Vector3 U = tyga::cross(up, W);
+		const tyga::Vector3 V = tyga::cross(W, U);
+		return tyga::Matrix4x4(U.x, U.y, U.z, 0,
+			V.x, V.y, V.z, 0,
+			W.x, W.y, W.z, 0,
+			pos.x, pos.y, pos.z, 1);
 	}
 
 	bool IsInsideTriangle(tyga::Vector2 point, Triangle tri)
