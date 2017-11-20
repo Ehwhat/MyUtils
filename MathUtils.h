@@ -26,21 +26,21 @@ namespace MathUtils {
 	* @param v Vector
 	* @return string output.
 	*/
-	std::string ToStringVector2(tyga::Vector2 v);
+	std::string ToStringVector2(const tyga::Vector2 v);
 	/**
 	* Turn Vector3 to string.
 	*
 	* @param v Vector
 	* @return string output.
 	*/
-	std::string ToStringVector3(tyga::Vector3 v);
+	std::string ToStringVector3(const tyga::Vector3 v);
 	/**
 	* Turn Vector4 to string.
 	*
 	* @param v Vector
 	* @return string output.
 	*/
-	std::string ToStringVector4(tyga::Vector4 v);
+	std::string ToStringVector4(const tyga::Vector4 v);
 	/**
 	* Turn Matrix4x4 to string. (Some slightly confusing arguments here, maybe a refactor is needed?)
 	*
@@ -49,7 +49,7 @@ namespace MathUtils {
 	* @param useMatrix display rotation vector or matrix? (Used for debugging Matrix to Quart conversion)
 	* @return string output.
 	*/
-	std::string ToStringMatrix4x4(tyga::Matrix4x4 matrix, bool extendedStats = true, bool useMatrix = false);
+	std::string ToStringMatrix4x4(const tyga::Matrix4x4 matrix, const bool extendedStats = true, const bool useMatrix = false);
 
 	/**
 	* Generic clamp function
@@ -61,7 +61,7 @@ namespace MathUtils {
 	* @return i clamped between min and max.
 	*/
 	template<class T>
-	T Clamp(T i, T min, T max) {
+	T Clamp(const T i, const T min, const T max) {
 		return i < min ? min : (i > max ? max : i);
 	}
 
@@ -75,7 +75,7 @@ namespace MathUtils {
 	* @return Value interpolated between lhs and rhs by t
 	*/
 	template<class T>
-	T Lerp(T lhs, T rhs, float t){
+	T Lerp(const T lhs, const T rhs, const float t){
 		return (1 - t)*lhs + t * rhs;
 	}
 
@@ -90,7 +90,7 @@ namespace MathUtils {
 	*/
 
 	template<class T>
-	T IncOverTime(T initalValue, T increment, float t)
+	T IncOverTime(const T initalValue, const T increment, const float t)
 	{
 		return initalValue + increment * t;
 	}
@@ -105,10 +105,7 @@ namespace MathUtils {
 		tyga::Vector3 point;
 		tyga::Vector3 normal;
 
-		Plane(tyga::Vector3 _point, tyga::Vector3 _normal) {
-			point = _point;
-			normal = _normal;
-		}
+		Plane(const tyga::Vector3 _point, const tyga::Vector3 _normal) : point(_point), normal(_normal) {}
 
 	};
 
@@ -121,11 +118,7 @@ namespace MathUtils {
 		tyga::Vector2 p1;
 		tyga::Vector2 p2;
 
-		Triangle(tyga::Vector2 _p0, tyga::Vector2 _p1, tyga::Vector2 _p2) {
-			p0 = _p0;
-			p1 = _p1;
-			p2 = _p2;
-		}
+		Triangle(const tyga::Vector2 _p0, const tyga::Vector2 _p1, const tyga::Vector2 _p2) : p0(_p0),p1(_p1),p2(_p2) {}
 	};
 
 	/**
@@ -136,7 +129,7 @@ namespace MathUtils {
 	struct Spline {
 		T p0, p1, p2, p3;
 
-		Spline(T _p0, T _p1, T _p2, T _p3) : p0(_p0), p1(_p1), p2(_p2), p3(_p3) {
+		Spline(const T _p0, const T _p1, const T _p2, const T _p3) : p0(_p0), p1(_p1), p2(_p2), p3(_p3) {
 		
 		}
 
@@ -202,11 +195,11 @@ namespace MathUtils {
 	struct AnimationCurve {
 		
 
-		AnimationCurve(tyga::Vector2 _p1, tyga::Vector2 _p2) : spline(Spline<tyga::Vector2>(tyga::Vector2(0,0),_p1,_p2,tyga::Vector2(1,1))) {
+		AnimationCurve(const tyga::Vector2 _p1, const tyga::Vector2 _p2) : spline(Spline<tyga::Vector2>(tyga::Vector2(0,0),_p1,_p2,tyga::Vector2(1,1))) {
 			DeterminePoints();
 		}
 
-		AnimationCurve(tyga::Vector2 _p0, tyga::Vector2 _p1, tyga::Vector2 _p2, tyga::Vector2 _p3) : spline(Spline<tyga::Vector2>(_p0, _p1, _p2, _p3)) {
+		AnimationCurve(const tyga::Vector2 _p0, const tyga::Vector2 _p1, const tyga::Vector2 _p2, const tyga::Vector2 _p3) : spline(Spline<tyga::Vector2>(_p0, _p1, _p2, _p3)) {
 			DeterminePoints();
 		}
 
@@ -220,7 +213,7 @@ namespace MathUtils {
 		* @param t value between 1 - 0
 		* @return point along Catmull-Rom spline by t
 		*/
-		tyga::Vector2 GetCatmullRomInterpolatedPoint(float t) {
+		tyga::Vector2 GetCatmullRomInterpolatedPoint(const float t) {
 			return spline.GetCatmullRomInterpolatedPoint(t);
 		}
 
@@ -230,7 +223,7 @@ namespace MathUtils {
 		* @param t value between 1 - 0
 		* @return point along Cubic Beizer spline by t
 		*/
-		tyga::Vector2 GetCubicInterpolatedPoint(float t) {
+		tyga::Vector2 GetCubicInterpolatedPoint(const float t) {
 			return spline.GetCubicInterpolatedPoint(t);
 
 		}
@@ -240,7 +233,7 @@ namespace MathUtils {
 		* @param x amount along x axis, between 1 - 0
 		* @return y value at given x axis, approximation
 		*/
-		float GetAnimationCurveOutput(float x) {
+		float GetAnimationCurveOutput(const float x) {
 			tyga::Vector2 point = FindPointForX(x);
 			float result = MathUtils::Clamp<float>(point.y, 0, 1);
 			return result;
@@ -307,7 +300,7 @@ namespace MathUtils {
 	* @return Value interpolated between lhs and rhs by t
 	*/
 	template<class T>
-	T Lerp(T lhs, T rhs, float t, AnimationCurve animationCurve)
+	T Lerp(const T lhs, const T rhs, float t, const AnimationCurve animationCurve)
 	{
 		t = animationCurve.GetAnimationCurveOutput(t);
 		return (1 - t)*lhs + t * rhs;
@@ -324,7 +317,7 @@ namespace MathUtils {
 	* @param animationCurve AnimationCurve to affect t by, used to create eased slerps
 	* @return Value interpolated between lhs and rhs by t
 	*/
-	tyga::Quaternion Slerp(tyga::Quaternion lhs, tyga::Quaternion rhs, float t, AnimationCurve animationCurve);
+	tyga::Quaternion Slerp(const tyga::Quaternion lhs, const tyga::Quaternion rhs, float t, const AnimationCurve animationCurve);
 
 	/**
 	* PI constant, redundent.
@@ -356,7 +349,7 @@ namespace MathUtils {
 	* @param degrees Degrees
 	* @return result in radians.
 	*/
-	float DegreesToRadians(float degrees);
+	float DegreesToRadians(const float degrees);
 
 	/**
 	* Radians to Degrees conversion.
@@ -364,7 +357,7 @@ namespace MathUtils {
 	* @param radians Radians
 	* @return result in degrees.
 	*/
-	float RadiansToDegrees(float radians);
+	float RadiansToDegrees(const float radians);
 
 	/**
 	* MPH to meters-per-minute conversion.
@@ -372,7 +365,7 @@ namespace MathUtils {
 	* @param miles Miles Per Hour
 	* @return Meters Per Minute.
 	*/
-	float MilesPerHourToMetersPerMinute(float miles);
+	float MilesPerHourToMetersPerMinute(const float miles);
 	
 	/**
 	* MPH to roations-per-minute conversion.
@@ -381,9 +374,9 @@ namespace MathUtils {
 	* @param radius radius in meters
 	* @return Rotations per minute.
 	*/
-	float MPHtoRotationsPerMinute(float miles, float radius);
+	float MPHtoRotationsPerMinute(const float miles, const float radius);
 
-	float QuatDotProduct(tyga::Quaternion lhs, tyga::Quaternion rhs);
+	float QuatDotProduct(const tyga::Quaternion lhs, const tyga::Quaternion rhs);
 
 	/**
 	* Speherical Coords to Cartesian Coords (Might not work as intended)
@@ -393,19 +386,19 @@ namespace MathUtils {
 	* @param radius Radius Of Sphere
 	* @return tyga::Vector3 of Coords.
 	*/
-	tyga::Vector3 SphericalPositionToVectorPosition(float theta, float axion, float radius);
+	tyga::Vector3 SphericalPositionToVectorPosition(const float theta, const float axion, const float radius);
 
 	//TODO Cartesian Coords to Speherical Coords (Might have some issues with world to local)
 
-	float GetSpeedFromVelocity(tyga::Vector3 velocity);
+	float GetSpeedFromVelocity(const tyga::Vector3 velocity);
 
-	float GetDistanceBetweenVectors(tyga::Vector3 a, tyga::Vector3 b);
+	float GetDistanceBetweenVectors(const tyga::Vector3 a, const tyga::Vector3 b);
 
-	float GetAngleBetweenVectors(tyga::Vector3 a, tyga::Vector3 b);
+	float GetAngleBetweenVectors(const tyga::Vector3 a, const tyga::Vector3 b);
 
-	tyga::Vector3 GetAxisOfRotationBetweenVectors(tyga::Vector3 a, tyga::Vector3 b);
+	tyga::Vector3 GetAxisOfRotationBetweenVectors(const tyga::Vector3 a, const tyga::Vector3 b);
 
-	float GetDistanceOfPointPerpendicularToPlane(tyga::Vector3 point, Plane plane);
+	float GetDistanceOfPointPerpendicularToPlane(const tyga::Vector3 point, const Plane plane);
 
 	/**
 	* Extract translation vector from Matrix
@@ -413,14 +406,14 @@ namespace MathUtils {
 	* @param m to extract from
 	* @return extracted translation vector
 	*/
-	tyga::Vector3 GetTranslationVectorFromMatrix(tyga::Matrix4x4 m);
+	tyga::Vector3 GetTranslationVectorFromMatrix(const tyga::Matrix4x4 m);
 	/**
 	* Generate matrix from translation vector
 	*
 	* @param v translation vector
 	* @return resulting matrix
 	*/
-	tyga::Matrix4x4 GetMatrixFromTranslationVector(tyga::Vector3 v);
+	tyga::Matrix4x4 GetMatrixFromTranslationVector(const tyga::Vector3 v);
 
 
 	/**
@@ -429,14 +422,14 @@ namespace MathUtils {
 	* @param m to extract from
 	* @return extracted scaling vector
 	*/
-	tyga::Vector3 GetScaleVectorFromMatrix(tyga::Matrix4x4 m);
+	tyga::Vector3 GetScaleVectorFromMatrix(const tyga::Matrix4x4 m);
 	/**
 	* Generate matrix from scaling vector
 	*
 	* @param v scaling vector
 	* @return resulting matrix
 	*/
-	tyga::Matrix4x4 GetMatrixFromScaleVector(tyga::Vector3 v);
+	tyga::Matrix4x4 GetMatrixFromScaleVector(const tyga::Vector3 v);
 
 	/**
 	* Extract Rotation Matrix from Matrix
@@ -444,7 +437,7 @@ namespace MathUtils {
 	* @param m to extract from
 	* @return extracted rotation matrix
 	*/
-	tyga::Matrix4x4 GetRotationMatrixFromMatrix(tyga::Matrix4x4 m);
+	tyga::Matrix4x4 GetRotationMatrixFromMatrix(const tyga::Matrix4x4 m);
 
 	/**
 	* Extract eular from matrix
@@ -452,40 +445,39 @@ namespace MathUtils {
 	* @param m to extract from
 	* @return extracted Eular
 	*/
-	tyga::Vector3 GetEularFromMatrix(tyga::Matrix4x4 m);
+	tyga::Vector3 GetEularFromMatrix(const tyga::Matrix4x4 m);
 	/**
 	* Generate matrix from eular
 	*
 	* @param eular Eular Angles as vector
 	* @return resulting matrix
 	*/
-	tyga::Matrix4x4 GetMatrixFromEular(tyga::Vector3 eular);
+	tyga::Matrix4x4 GetMatrixFromEular(const tyga::Vector3 eular);
 	/**
 	* Generate matrix from quaternion
 	*
 	* @param q Quaternion
 	* @return resulting matrix
 	*/
-	tyga::Matrix4x4 GetMatrixFromQuat(tyga::Quaternion q);
+	tyga::Matrix4x4 GetMatrixFromQuat(const tyga::Quaternion q);
 
-	tyga::Quaternion GetQuatFromMatrix(tyga::Matrix4x4 m);
+	tyga::Quaternion GetQuatFromMatrix(const tyga::Matrix4x4 m);
 
-	tyga::Quaternion GetQuatFromEular(tyga::Vector3 v);
+	tyga::Quaternion GetQuatFromEular(const tyga::Vector3 v);
 
-	tyga::Quaternion getQuatFromDirection(tyga::Vector3 v, tyga::Vector3 up = tyga::Vector3(0, 0, 1));
+	tyga::Quaternion getQuatFromDirection(const tyga::Vector3 v, const tyga::Vector3 up = tyga::Vector3(0, 0, 1));
 
-	tyga::Matrix4x4 getMatrixFromDirection(tyga::Vector3 v, tyga::Vector3 up = tyga::Vector3(0,1,0));
+	tyga::Matrix4x4 getMatrixFromDirection(const tyga::Vector3 v, const tyga::Vector3 up = tyga::Vector3(0,1,0));
 
-	tyga::Vector3 RotateVectorByQuat(tyga::Vector3 v, tyga::Quaternion q);
+	tyga::Vector3 RotateVectorByQuat(const tyga::Vector3 v, const tyga::Quaternion q);
 
-	tyga::Vector3 GetForwardVectorFromMatrix(tyga::Matrix4x4 m);
-	tyga::Vector3 GetRightVectorFromMatrix(tyga::Matrix4x4 m);
+	tyga::Vector3 GetForwardVectorFromMatrix(const tyga::Matrix4x4 m);
+	tyga::Vector3 GetRightVectorFromMatrix(const tyga::Matrix4x4 m);
 	tyga::Vector3 GetUpVectorFromMatrix(tyga::Matrix4x4 m);
 
-	tyga::Matrix4x4 CombineMatrices(tyga::Matrix4x4 first, tyga::Matrix4x4 second);
-	tyga::Vector3 MultiplyVectors(tyga::Vector3 lhs, tyga::Vector3 rhs);
+	tyga::Matrix4x4 CombineMatrices(const tyga::Matrix4x4 first, const tyga::Matrix4x4 second);
 
-	bool IsInsideTriangle(tyga::Vector2 point, Triangle tri);
+	bool IsInsideTriangle(const tyga::Vector2 point, const Triangle tri);
 
 	/**
 	* Generate Sine Wave and sample at time

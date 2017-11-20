@@ -3,18 +3,24 @@
 #include <unordered_map>
 #include <string>
 #include "HActor.h"
+#include "MathUtils.h"
 #include <functional>
 #include <iostream>
 
 namespace Animator {
 
-		template<class T>
+		template<class T, typename PoseData>
+		class CompositeAnimationActor {
+		public:
+			T actor;
+			std::unordered_map<std::string, PoseData> poses;
+		};
+
+		template<class T, typename PoseData>
 		class CompositeAnimation
 		{
 		public:
-			CompositeAnimation() {
-
-			}
+			CompositeAnimation(std::function<void(CompositeAnimationActor<T, PoseData> actor)> _poseFunction) : poseFunction(_poseFunction)  {}
 
 			~CompositeAnimation() {
 
@@ -28,30 +34,35 @@ namespace Animator {
 				compositeActors[key] = actor;
 			}
 
-			void RegisterState(std::string name, std::function<void(std::unordered_map<std::string, T>* compositeActors, float deltaTime)> function) {
-				compositeActors[name] = function;
-			}
-
-			void SetState() {
-				auto result = compositeStates.find(key);
-				if (result != compositeStates.end()) {
-					currentState = compositeStates[key];
-				} else{
-					printf("State not found: " + key);
-				}
-			}
-
-			void Execute() {
-
-			}
-
 		private:
-			std::unordered_map<std::string, T> compositeActors;
-			std::unordered_map<std::string, std::function<void(std::unordered_map<std::string, T>* compositeActors, float deltaTime)>> compositeStates;
+			std::unordered_map<std::string, CompositeAnimationActor<T,PoseData>> compositeActors;
 
-			std::function<void(std::unordered_map<std::string, T>* compositeActors, float deltaTime)> currentState;
+			std::function<void(CompositeAnimationActor<T, PoseData> actor)> poseFunction;
 
 		};
+		namespace Pose {
+			struct PoseData {
+				tyga::Vector3 translate;
+				tyga::Vector3 eular;
+			};
+
+			class Pose : public CompositeAnimation<std::shared_ptr<tyga::HActor>, PoseData> {
+			public:
+				Pose() : CompositeAnimation(void(poseFunction)()) {
+
+				}
+				~Pose() {
+
+				}
+
+			private:
+				void poseFunction(CompositeAnimationActor<std::shared_ptr<tyga::HActor>, PoseData> actor) {
+					
+				}
+
+			};
+		}
+
 }
 
 
