@@ -87,39 +87,55 @@ std::shared_ptr<tyga::HActor> ActorUtils::AddHActorToWorld(std::shared_ptr<tyga:
 	return actor;
 }
 
-std::shared_ptr<tyga::HActor> ActorUtils::AddHActorToWorld(tyga::Vector3 pos, tyga::Vector3 rot, std::string meshName, tyga::Vector3 colour, bool isRoot)
+std::shared_ptr<tyga::HActor> ActorUtils::AddHActorToWorld(tyga::Vector3 pos, tyga::Vector3 rot, std::string meshName, tyga::Vector3 colour, bool isRoot, std::string name)
 {
 	auto actor = std::make_shared<tyga::HActor>(tyga::HActor());
 	actor->SetOffsetTransform(MathUtils::GetMatrixFromEular(rot)*MathUtils::GetMatrixFromTranslationVector(pos));
+	actor->SetName(name);
 	AddHActorToWorld(actor, isRoot);
 	AddModelToActor(actor->Actor(), meshName, colour);
 	return actor;
 }
 
-std::shared_ptr<tyga::HActor> ActorUtils::AddHActorToWorld(tyga::Vector3 pos, tyga::Vector3 rot, std::string meshName, std::shared_ptr<tyga::GraphicsMaterial> material, bool isRoot)
+std::shared_ptr<tyga::HActor> ActorUtils::AddHActorToWorld(tyga::Vector3 pos, tyga::Vector3 rot, std::string meshName, std::shared_ptr<tyga::GraphicsMaterial> material, bool isRoot, std::string name)
 {
 	auto actor = std::make_shared<tyga::HActor>(tyga::HActor());
 	actor->SetOffsetTransform(MathUtils::GetMatrixFromEular(rot)*MathUtils::GetMatrixFromTranslationVector(pos));
+	actor->SetName(name);
 	AddHActorToWorld(actor, isRoot);
 	AddModelToActor(actor->Actor(), meshName, material);
 	return actor;
 }
 
-std::shared_ptr<tyga::HActor> ActorUtils::AddHActorToWorld(tyga::Vector3 pos, tyga::Vector3 rot, std::shared_ptr<tyga::GraphicsMesh> mesh, std::shared_ptr<tyga::GraphicsMaterial> material, bool isRoot)
+std::shared_ptr<tyga::HActor> ActorUtils::AddHActorToWorld(tyga::Vector3 pos, tyga::Vector3 rot, std::shared_ptr<tyga::GraphicsMesh> mesh, std::shared_ptr<tyga::GraphicsMaterial> material, bool isRoot, std::string name)
 {
 	auto actor = std::make_shared<tyga::HActor>(tyga::HActor());
 	actor->SetOffsetTransform(MathUtils::GetMatrixFromEular(rot)*MathUtils::GetMatrixFromTranslationVector(pos));
+	actor->SetName(name);
 	AddHActorToWorld(actor, isRoot);
 	AddModelToActor(actor->Actor(), mesh, material);
 	return actor;
 }
 
-std::shared_ptr<tyga::HActor> ActorUtils::AddHActorToWorld(tyga::Vector3 pos, tyga::Vector3 rot, bool isRoot)
+std::shared_ptr<tyga::HActor> ActorUtils::AddHActorToWorld(tyga::Vector3 pos, tyga::Vector3 rot, bool isRoot, std::string name)
 {
 	auto actor = std::make_shared<tyga::HActor>(tyga::HActor());
 	actor->SetOffsetTransform(MathUtils::GetMatrixFromEular(rot)*MathUtils::GetMatrixFromTranslationVector(pos));
+	actor->SetName(name);
 	AddHActorToWorld(actor, isRoot);
 	return actor;
+}
+
+void ActorUtils::AddModelToHActorAccordingToName(std::string prefix, std::shared_ptr<tyga::HActor> actor)
+{
+	auto graphics = tyga::GraphicsCentre::defaultCentre();
+	auto model = graphics->newModel();
+	model->material = graphics->newMaterial();
+	model->material->texture = actor->name;
+	model->mesh = graphics->newMeshWithIdentifier(prefix + actor->name);
+
+	actor->Actor()->attachComponent(model);
+
 }
 
 std::shared_ptr<tyga::GraphicsMesh> ActorUtils::GraphicsShare::GetMeshFromIdentifier(std::string name)

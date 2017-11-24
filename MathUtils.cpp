@@ -4,16 +4,6 @@
 
 namespace MathUtils {
 
-	
-
-	float DegreesToRadians(float degrees) {
-		return degrees * _pi / 180;
-	}
-
-	float RadiansToDegrees(float radians) {
-		return radians * 180 / _pi;
-	}
-
 	float MilesPerHourToMetersPerMinute(float miles)
 	{
 		return miles * 1609; // Super magic number is conversion rate, don't worry about it
@@ -133,7 +123,7 @@ namespace MathUtils {
 
 	tyga::Matrix4x4 GetMatrixFromEular(tyga::Vector3 eular)
 	{
-		eular *= _pi / 180;
+		eular *= _pi / 180; // Degrees to radians
 		tyga::Matrix4x4 x = tyga::Matrix4x4(
 			1, 0, 0, 0,
 			0, cosf(eular.x), -sinf(eular.x), 0,
@@ -247,7 +237,8 @@ namespace MathUtils {
 		return tyga::Matrix4x4(U.x, U.y, U.z, 0,
 			V.x, V.y, V.z, 0,
 			W.x, W.y, W.z, 0,
-			0, 0, 0, 1);
+			0, 0, 0, 1);
+
 	}
 
 	tyga::Vector3 RotateVectorByQuat(tyga::Vector3 v, tyga::Quaternion q)
@@ -302,28 +293,38 @@ namespace MathUtils {
 		return (s > 0 && t > 0 && (1 - s - t) > 0);
 	}
 
+	float Dot(tyga::Quaternion lhs, tyga::Quaternion rhs) {
+		return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
+	}
+
 	tyga::Quaternion Slerp(tyga::Quaternion lhs, tyga::Quaternion rhs, float t, MathUtils::AnimationCurve animationCurve) {
-		lhs = tyga::unit(lhs);
-		rhs = tyga::unit(rhs);
-
-		tyga::Quaternion result;
-
 		t = animationCurve.GetAnimationCurveOutput(t);
+		return Slerp(lhs, rhs, t);
+	}
 
-		float dotProduct = QuatDotProduct(lhs, rhs);
-		if (dotProduct < 0.0) {
-			rhs = -rhs;
-			dotProduct = -dotProduct;
+	tyga::Quaternion Slerp(tyga::Quaternion lhs, tyga::Quaternion rhs, float t)
+	{
+		tyga::Quaternion result;
+		float dot = Dot(lhs, rhs);
+
+		if (dot < 0)
+		{
+			dot = -dot;
+			result = -rhs;
+		}
+		else {
+			result = rhs;
 		}
 
-		dotProduct = std::max(-1.f, std::min(dotProduct, 1.f));
-		float angleBetweenInputs = acosf(dotProduct);
-		float angleToResult = angleBetweenInputs*t;
-
-		result = rhs - lhs*dotProduct;
-		tyga::unit(result);
-
-		return lhs*cosf(angleToResult) + result*sinf(angleToResult);
+		if (dot < 0.95f)
+		{
+			float angle = acosf(dot);
+			return (lhs*sinf(angle*(1 - t)) + result*sinf(angle*t)) / sinf(angle);
+		}
+		else
+		{ // if the angle is small, use linear interpolation								
+			return Lerp(lhs, result, t);
+		}
 	}
 	
 	float SinWave(float frequency, float amplitude, float phase, float inital, float time)

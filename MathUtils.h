@@ -95,6 +95,14 @@ namespace MathUtils {
 		return initalValue + increment * t;
 	}
 
+	/**
+	* Distance Between two values
+	* Currently is only specialised for Vector3 and Vector2
+	*
+	* @param lhs Begin value
+	* @param rhs End value
+	* @return Distance between
+	*/
 	template<class T>
 	inline float DistanceBetween(T lhs, T rhs) {
 		std::string s = std::string("Not Implimented For ");
@@ -148,19 +156,31 @@ namespace MathUtils {
 	*/
 	template<class T>
 	struct Spline {
-		T p0, p1, p2, p3;
+
+		std::vector<T> points;
 		float arcLength;
 
-		int amountOfPoints = 100;
-		std::vector<float> points;
+		Spline(T _p0, T _p1, T _p2, T _p3) : points{_p0,_p1,_p2,_p3} {
+			DeterminePoints();
+		}
 
-
-		Spline(T _p0, T _p1, T _p2, T _p3) : p0(_p0), p1(_p1), p2(_p2), p3(_p3) {
+		Spline(std::vector<T> _points) : points{_points} {
 			DeterminePoints();
 		}
 
 		~Spline() {
+			
 		}
+
+		struct Result {
+		public:
+			std::vector<T> curve;
+			float time;
+
+			Result(std::vector<T> c, float t) : curve(c), time(t) {}
+
+		};
+		
 
 		/**
 		* Catmull-Rom Interpolation
@@ -170,13 +190,8 @@ namespace MathUtils {
 		* @return point along Catmull-Rom spline by t
 		*/
 		T GetCatmullRomInterpolatedPoint(float t) const {
-			t = Clamp<float>(t, 0, 1);
-			return 0.5f * (
-				(2 * p1) +
-				(-p0 + p2) * t +
-				(2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t +
-				(-p0 + 3 * p1 - 3 * p2 + p3) * t * t * t
-				);
+			Result curve = GetCurve(t);
+			InternalGetCatmullRomInterpolatedPoint(curve.time, curve.curve[0], curve.curve[1], curve.curve[2], curve.curve[3]);
 		}
 
 		/**
@@ -187,63 +202,68 @@ namespace MathUtils {
 		* @return point along Cubic Beizer spline by t
 		*/
 		T GetCubicInterpolatedPoint(float t) const {
-			t = Clamp<float>(t, 0, 1);
-			float nt = 1.f - t;
-			return
-			nt * nt * nt * p0 +
-			3.f * nt * nt * t * p1 +
-			3.f * nt * t * t * p2 +
-			t * t * t * p3;
+			Result curve = GetCurve(t);
+			return InternalGetCubicInterpolatedPoint(curve.time, curve.curve[0], curve.curve[1], curve.curve[2], curve.curve[3]);
 		}
 
 		T GetNormalisedCubicPoint(float u) const {
-			float t;
-			int pointsLen = points.size();
-			float targetArcLength = u * points[pointsLen - 1];
+			float t = getArcTime(u);
 			
+			return GetCubicInterpolatedPoint(t);
+		}
+
+		T GetNormalisedCubicFirstDerivative(float u) const {
+			float t = getArcTime(u);
+			return GetCubicFirstDerivative(t);
+		}
+
+		T GetCubicFirstDerivative(float t) const {
+			Result curve = GetCurve(t);
+			return InternalGetCubicFirstDerivative(curve.time, curve.curve[0], curve.curve[1], curve.curve[2], curve.curve[3]);
+		}
+
+		T GetCubicSecondDerivative(float t) const {
+			Result curve = GetCurve(t);
+			return InternalGetCubicSecondDerivative(curve.time, curve.curve[0], curve.curve[1], curve.curve[2], curve.curve[3]);
+		}
+
+		// Arc Length Paramization solution, which was kinda like my old keyframe solution, but I've implimented a binary search which should make things faster
+
+		float getArcTime(float u) const {
+			float t;
+			u = Clamp(u, 0.f, 1.f);
+			int pointsLen = (int)preDeterminedPoints.size();
+			float targetArcLength = u * preDeterminedPoints[pointsLen - 1];
+
 			int low = 0, high = pointsLen, index = 0;
 			while (low < high) {
 				index = low + (((high - low) / 2) | 0);
-				if (points[index] < targetArcLength) {
+				if (preDeterminedPoints[index] < targetArcLength) {
 					low = index + 1;
 				}
 				else {
 					high = index;
 				}
 			}
-			if (points[index] > targetArcLength) {
+			if (preDeterminedPoints[index] > targetArcLength) {
 				index--;
 			}
-			float lastLength = points[index];
+			float lastLength = preDeterminedPoints[index];
 			if (lastLength == targetArcLength) {
-				t = index / pointsLen;
+				t = (float)(index / pointsLen);
 			}
 			else {
-				t = (index + (targetArcLength - lastLength) / (points[index + 1] - lastLength)) / pointsLen;
+				t = (index + (targetArcLength - lastLength) / (preDeterminedPoints[index + 1] - lastLength)) / pointsLen;
 			}
-			return GetCubicInterpolatedPoint(t);
-
+			t = Clamp(t, 0.f, 1.f);
+			return t;
 		}
 
-		T GetCubicFirstDerivative(float t) const {
-			t = Clamp<float>(t, 0, 1);
-			float nt = 1.f - t;
-			return
-				3.f * nt * nt * (p1 - p0) +
-				6.f * nt * t * (p2 - p1) +
-				3.f * t * t * (p3 - p2);
-		}
-
-		T GetCubicSecondDerivative(float t) const {
-			t = Clamp<float>(t, 0, 1);
-			return
-				2 * (p2 - (2 * p1) + p0);
-		}
 	private:
 
 		void DeterminePoints() {
-			points.clear();
-			points.reserve(amountOfPoints);
+			preDeterminedPoints.clear();
+			preDeterminedPoints.reserve(amountOfPoints);
 			
 			T previousPoint = GetCubicInterpolatedPoint(0);
 			float sum = 0;
@@ -253,10 +273,72 @@ namespace MathUtils {
 				T point = GetCubicInterpolatedPoint((1.f / amountOfPoints)*i);
 				float distance = DistanceBetween(point, previousPoint);
 				sum += distance;
-				points.insert(points.begin() + (int)i, sum);
+				preDeterminedPoints.insert(preDeterminedPoints.begin() + (int)i, sum);
 				previousPoint = point;
 
 			}
+		}
+		int amountOfPoints = 100;
+		std::vector<float> preDeterminedPoints;
+
+		int GetCurveCount() const {
+			return (((int)points.size() - 1) / 3);
+		}
+
+		Result GetCurve(float t) const {
+			float time = t;
+			if (points.size() > 3) {
+				int i = 0;
+				if (time >= 1) {
+					time = 1;
+					i = (int)points.size() - 4;
+				}
+				else {
+					int count = GetCurveCount();
+					time = Clamp(time, 0.f, 1.f) * count;
+					i = (int)time;
+					time -= i;
+					i *= 3;
+				
+				}
+				return Result(std::vector<T>{points[i], points[i + 1], points[i + 2], points[i + 3]}, time);
+			}
+			return Result(std::vector<T>{T(), T(), T(), T()}, time);
+		}
+
+		T InternalGetCatmullRomInterpolatedPoint(float t, T p0, T p1, T p2, T p3) const {
+			t = Clamp<float>(t, 0, 1);
+			return 0.5f * (
+				(2 * p1) +
+				(-p0 + p2) * t +
+				(2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t +
+				(-p0 + 3 * p1 - 3 * p2 + p3) * t * t * t
+				);
+		}
+
+		T InternalGetCubicInterpolatedPoint(float t, T p0, T p1, T p2, T p3) const {
+			t = Clamp<float>(t, 0, 1);
+			float nt = 1.f - t;
+			return
+				nt * nt * nt * p0 +
+				3.f * nt * nt * t * p1 +
+				3.f * nt * t * t * p2 +
+				t * t * t * p3;
+		}
+
+		T InternalGetCubicFirstDerivative(float t, T p0, T p1, T p2, T p3) const {
+			t = Clamp<float>(t, 0, 1);
+			float nt = 1.f - t;
+			return
+				3.f * nt * nt * (p1 - p0) +
+				6.f * nt * t * (p2 - p1) +
+				3.f * t * t * (p3 - p2);
+		}
+
+		T InternalGetCubicSecondDerivative(float t, T p0, T p1, T p2, T p3) const {
+			t = Clamp<float>(t, 0, 1);
+			return
+				2 * (p2 - (2 * p1) + p0);
 		}
 		
 
@@ -273,17 +355,11 @@ namespace MathUtils {
 	struct AnimationCurve {
 		
 
-		AnimationCurve(const tyga::Vector2 _p1, const tyga::Vector2 _p2) : spline(Spline<tyga::Vector2>(tyga::Vector2(0,0),_p1,_p2,tyga::Vector2(1,1))) {
-			DeterminePoints();
-		}
+		AnimationCurve(const tyga::Vector2 _p1, const tyga::Vector2 _p2) : spline(Spline<tyga::Vector2>(tyga::Vector2(0,0),_p1,_p2,tyga::Vector2(1,1))) {}
 
-		AnimationCurve(const tyga::Vector2 _p0, const tyga::Vector2 _p1, const tyga::Vector2 _p2, const tyga::Vector2 _p3) : spline(Spline<tyga::Vector2>(_p0, _p1, _p2, _p3)) {
-			DeterminePoints();
-		}
+		AnimationCurve(const tyga::Vector2 _p0, const tyga::Vector2 _p1, const tyga::Vector2 _p2, const tyga::Vector2 _p3) : spline(Spline<tyga::Vector2>(_p0, _p1, _p2, _p3)) {}
 
-		AnimationCurve() : spline(Spline<tyga::Vector2>(tyga::Vector2(), tyga::Vector2(), tyga::Vector2(), tyga::Vector2())) {
-			//DeterminePoints();
-		}
+		AnimationCurve() : spline(Spline<tyga::Vector2>(tyga::Vector2(), tyga::Vector2(), tyga::Vector2(), tyga::Vector2())) {}
 
 		/**
 		* Catmull-Rom Interpolation
@@ -291,7 +367,7 @@ namespace MathUtils {
 		* @param t value between 1 - 0
 		* @return point along Catmull-Rom spline by t
 		*/
-		tyga::Vector2 GetCatmullRomInterpolatedPoint(const float t) {
+		tyga::Vector2 GetCatmullRomInterpolatedPoint(const float t) const {
 			return spline.GetCatmullRomInterpolatedPoint(t);
 		}
 
@@ -301,17 +377,26 @@ namespace MathUtils {
 		* @param t value between 1 - 0
 		* @return point along Cubic Beizer spline by t
 		*/
-		tyga::Vector2 GetCubicInterpolatedPoint(const float t) {
+		tyga::Vector2 GetCubicInterpolatedPoint(const float t) const {
 			return spline.GetCubicInterpolatedPoint(t);
 
 		}
+
+		tyga::Vector2 GetCubicFirstDerivative(float t) const {
+			return spline.GetCubicFirstDerivative(t);
+		}
+
+		float GetCubicFirstDerivativeMagnitude(float t) const {
+			return tyga::length(spline.GetCubicFirstDerivative(t));
+		}
+
 		/**
 		* Animation Curve output, uses determined points to find Y for X along curve
 		*
 		* @param x amount along x axis, between 1 - 0
 		* @return y value at given x axis, approximation
 		*/
-		float GetAnimationCurveOutput(const float x) {
+		float GetAnimationCurveOutput(const float x) const {
 			tyga::Vector2 point = FindPointForX(x);
 			float result = MathUtils::Clamp<float>(point.y, 0, 1);
 			return result;
@@ -327,9 +412,11 @@ namespace MathUtils {
 		* @param x amount along x axis, between 1 - 0
 		* @return y value at given x axis, approximation
 		*/
-		tyga::Vector2 FindPointForX(float x) {
+		tyga::Vector2 FindPointForX(float x) const {
 			
-			return tyga::Vector2();
+			return spline.GetNormalisedCubicPoint(x);
+
+			//return tyga::Vector2();
 			/*x = Clamp(x, 0.f, 1.f);
 			tyga::Vector2 prevPoint;
 			tyga::Vector2 currentPoint;
@@ -375,17 +462,8 @@ namespace MathUtils {
 
 	
 
-	/**
-	* Slerp function for Quaternions
-	* TODO: make generic
-	*
-	* @param lhs Begin value
-	* @param rhs End value
-	* @param t Interpolation value
-	* @param animationCurve AnimationCurve to affect t by, used to create eased slerps
-	* @return Value interpolated between lhs and rhs by t
-	*/
-	tyga::Quaternion Slerp(const tyga::Quaternion lhs, const tyga::Quaternion rhs, float t, const AnimationCurve animationCurve);
+	
+
 
 	/**
 	* PI constant, redundent.
@@ -411,13 +489,31 @@ namespace MathUtils {
 		tyga::Vector2(0.355f, 1.f)
 		);
 
+
+	/**
+	* Slerp function for Quaternions
+	* TODO: make generic
+	*
+	* @param lhs Begin value
+	* @param rhs End value
+	* @param t Interpolation value
+	* @param animationCurve AnimationCurve to affect t by, used to create eased slerps
+	* @return Value interpolated between lhs and rhs by t
+	*/
+	tyga::Quaternion Slerp(const tyga::Quaternion lhs, const tyga::Quaternion rhs, float t);
+	tyga::Quaternion Slerp(const tyga::Quaternion lhs, const tyga::Quaternion rhs, float t, const AnimationCurve animationCurve);
+	
+
 	/**
 	* Degrees to Radians conversion.
 	*
 	* @param degrees Degrees
 	* @return result in radians.
 	*/
-	float DegreesToRadians(const float degrees);
+	template<class T>
+	T DegreesToRadians(const T degrees) {
+		return degrees * _pi / 180;
+	}
 
 	/**
 	* Radians to Degrees conversion.
@@ -425,7 +521,10 @@ namespace MathUtils {
 	* @param radians Radians
 	* @return result in degrees.
 	*/
-	float RadiansToDegrees(const float radians);
+	template<class T>
+	T RadiansToDegrees(const T radians) {
+		return radians * 180 / _pi;
+	}
 
 	/**
 	* MPH to meters-per-minute conversion.
@@ -529,19 +628,37 @@ namespace MathUtils {
 	*/
 	tyga::Matrix4x4 GetMatrixFromQuat(const tyga::Quaternion q);
 
+	/**
+	* Generate quaternion from matrix
+	*
+	* @param m Matrix4x4
+	* @return resulting quaternion
+	*/
 	tyga::Quaternion GetQuatFromMatrix(const tyga::Matrix4x4 m);
 
+	/**
+	* Generate quaternion from eular
+	*
+	* @param v Vector3 as eular angles
+	* @return resulting quaternion
+	*/
 	tyga::Quaternion GetQuatFromEular(const tyga::Vector3 v);
 
+	tyga::Vector3 RotateVectorByQuat(const tyga::Vector3 v, const tyga::Quaternion q);
+
+	/**
+	* NOT WORKING
+	
 	tyga::Quaternion getQuatFromDirection(const tyga::Vector3 v, const tyga::Vector3 up = tyga::Vector3(0, 0, 1));
 
 	tyga::Matrix4x4 getMatrixFromDirection(const tyga::Vector3 v, const tyga::Vector3 up = tyga::Vector3(0,1,0));
 
-	tyga::Vector3 RotateVectorByQuat(const tyga::Vector3 v, const tyga::Quaternion q);
+	
 
 	tyga::Vector3 GetForwardVectorFromMatrix(const tyga::Matrix4x4 m);
 	tyga::Vector3 GetRightVectorFromMatrix(const tyga::Matrix4x4 m);
 	tyga::Vector3 GetUpVectorFromMatrix(tyga::Matrix4x4 m);
+	*/
 
 	tyga::Matrix4x4 CombineMatrices(const tyga::Matrix4x4 first, const tyga::Matrix4x4 second);
 

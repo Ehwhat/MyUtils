@@ -22,13 +22,15 @@ namespace ActorUtils
 
 	std::shared_ptr<tyga::HActor> AddHActorToWorld(std::shared_ptr<tyga::HActor> actor, bool isRoot);
 
-	std::shared_ptr<tyga::HActor> AddHActorToWorld(tyga::Vector3 pos, tyga::Vector3 rot, std::string meshName, tyga::Vector3 colour, bool isRoot);
+	std::shared_ptr<tyga::HActor> AddHActorToWorld(tyga::Vector3 pos, tyga::Vector3 rot, std::string meshName, tyga::Vector3 colour, bool isRoot, std::string name = "Unnamed HActor");
 
-	std::shared_ptr<tyga::HActor> AddHActorToWorld(tyga::Vector3 pos, tyga::Vector3 rot, std::string meshName, std::shared_ptr<tyga::GraphicsMaterial> material, bool isRoot);
+	std::shared_ptr<tyga::HActor> AddHActorToWorld(tyga::Vector3 pos, tyga::Vector3 rot, std::string meshName, std::shared_ptr<tyga::GraphicsMaterial> material, bool isRoot, std::string name = "Unnamed HActor");
 
-	std::shared_ptr<tyga::HActor> AddHActorToWorld(tyga::Vector3 pos, tyga::Vector3 rot, std::shared_ptr<tyga::GraphicsMesh> mesh, std::shared_ptr<tyga::GraphicsMaterial> material, bool isRoot);
+	std::shared_ptr<tyga::HActor> AddHActorToWorld(tyga::Vector3 pos, tyga::Vector3 rot, std::shared_ptr<tyga::GraphicsMesh> mesh, std::shared_ptr<tyga::GraphicsMaterial> material, bool isRoot, std::string name = "Unnamed HActor");
 
-	std::shared_ptr<tyga::HActor> AddHActorToWorld(tyga::Vector3 pos, tyga::Vector3 rot, bool isRoot);
+	std::shared_ptr<tyga::HActor> AddHActorToWorld(tyga::Vector3 pos, tyga::Vector3 rot, bool isRoot, std::string name = "Unnamed HActor");
+
+	void AddModelToHActorAccordingToName(std::string prefix, std::shared_ptr<tyga::HActor> actor);
 
 	namespace GraphicsShare {
 

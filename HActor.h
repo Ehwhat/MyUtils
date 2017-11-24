@@ -13,16 +13,19 @@
 
 namespace tyga {
 
-	class HActor : public tyga::ActorDelegate 
+	class HActor : public tyga::ActorDelegate
 	{
 	public:
 		bool isRoot = false;
 
 		tyga::Matrix4x4 localTransform = tyga::Matrix4x4();
 		tyga::Matrix4x4 globalTransform = tyga::Matrix4x4();
-		tyga::Matrix4x4 offsetTransform = tyga::Matrix4x4();
+		tyga::Matrix4x4 offsetTransform = tyga::Matrix4x4(); 
+		// Having an offset transformation along with a local transformation is a little bit odd as it's a weird line in the sand to draw, expecially after my implimentation of layers in the AnimationStateMachine
+		// Maybe having a vector of transformations to allow for flexibllity would be better?
 
 		std::vector<std::shared_ptr<tyga::HActor>> children;
+		std::string name = "Unnamed HActor";
 
 		HActor(bool _isRoot = false);
 		~HActor();
@@ -38,6 +41,8 @@ namespace tyga {
 		virtual void hActorLateClockTick(std::shared_ptr<tyga::HActor> actor){}
 
 
+		void SetName(std::string _name);
+
 		void AddChild(std::shared_ptr<tyga::HActor> hActor);
 
 		void RemoveChild(std::shared_ptr<tyga::HActor> hActor);
@@ -52,6 +57,9 @@ namespace tyga {
 
 		void DetachComponent(std::shared_ptr<ActorComponent> c);
 
+		std::string PrintChildren(); // returns a string of a representation of all children, I really should rename this
+		
+
 	private:
 
 		std::shared_ptr<tyga::HActor> _parent;
@@ -64,6 +72,8 @@ namespace tyga {
 		virtual void actorWillLeaveWorld(std::shared_ptr<tyga::Actor> actor) override;
 
 		void applyTransformToChildren(Matrix4x4 transform);
+
+		std::string PrintChildren(std::shared_ptr<tyga::HActor> actor, int indent);
 
 	};
 }

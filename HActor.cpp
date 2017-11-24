@@ -1,11 +1,12 @@
 #include "HActor.h"
 #include <tyga/ActorWorld.hpp>
 #include <tyga/Actor.hpp>
+#include <string>
 
 namespace tyga {
 
 	HActor::HActor(bool _isRoot) : isRoot(_isRoot) {
-		
+		_this = std::shared_ptr<tyga::HActor>(this, [](tyga::HActor* p) {}); // Honestly this is a travisty, and needs a major revision to not allow this to happen.
 	}
 	HActor::~HActor(){}
 
@@ -14,6 +15,7 @@ namespace tyga {
 			hActorClockTick(_this);
 			Matrix4x4 resultingTransfom = GetResultingTransform();
 			this->Actor()->setTransformation(resultingTransfom);
+			
 			hActorLateClockTick(_this);
 			applyTransformToChildren(resultingTransfom);
 		}
@@ -23,13 +25,17 @@ namespace tyga {
 
 	void tyga::HActor::actorDidEnterWorld(std::shared_ptr<tyga::Actor> actor)
 	{
-		_this = std::shared_ptr<tyga::HActor>(this);
 		hActorDidEnterWorld(_this);
 	}
 
 	void tyga::HActor::actorWillLeaveWorld(std::shared_ptr<tyga::Actor> actor)
 	{
 		hActorWillLeaveWorld(_this);
+	}
+
+	void HActor::SetName(std::string _name)
+	{
+		name = _name;
 	}
 
 	void tyga::HActor::AddChild(std::shared_ptr<tyga::HActor> actor) {
@@ -61,6 +67,22 @@ namespace tyga {
 	{
 		_this->Actor()->detachComponent(c);
 	}
+
+	std::string HActor::PrintChildren()
+	{
+		return PrintChildren(_this, 0);
+	}
+
+	std::string HActor::PrintChildren(std::shared_ptr<tyga::HActor> actor, int indent)
+	{
+		std::string output = std::string(indent*3, '-') + "| " + actor->name + "\n";
+		for (auto child : actor->children)
+		{
+			output += PrintChildren(child, indent + 1);
+		}
+		return output;
+	}
+
 
 	void tyga::HActor::applyTransformToChildren(Matrix4x4 transform) {
 		for (std::shared_ptr<tyga::HActor> child : children) {
