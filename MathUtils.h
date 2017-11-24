@@ -662,6 +662,8 @@ namespace MathUtils {
 
 	tyga::Matrix4x4 CombineMatrices(const tyga::Matrix4x4 first, const tyga::Matrix4x4 second);
 
+	tyga::Vector3 MultiplyVector3(const tyga::Vector3 lhs, const tyga::Vector3 rhs);
+
 	tyga::Matrix4x4 frenet(const tyga::Vector3 pos, const tyga::Vector3 dir, const tyga::Vector3 up = tyga::Vector3(0, 1, 0));
 
 	bool IsInsideTriangle(tyga::Vector2 point, Triangle tri);
