@@ -274,6 +274,11 @@ namespace MathUtils {
 		return tyga::Vector3(lhs.x*rhs.x, lhs.y*rhs.y, lhs.z*lhs.z);
 	}
 
+	bool EqualVector3(const tyga::Vector3 lhs, const tyga::Vector3 rhs)
+	{
+		return (lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z);
+	}
+
 	tyga::Matrix4x4 frenet(const tyga::Vector3 pos, const tyga::Vector3 dir, const tyga::Vector3 up)
 	{
 		const tyga::Vector3 W = tyga::unit(dir);
