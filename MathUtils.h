@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <random>
 
 
 /**
@@ -654,11 +655,12 @@ namespace MathUtils {
 	tyga::Matrix4x4 getMatrixFromDirection(const tyga::Vector3 v, const tyga::Vector3 up = tyga::Vector3(0,1,0));
 
 	
+	*/
 
 	tyga::Vector3 GetForwardVectorFromMatrix(const tyga::Matrix4x4 m);
 	tyga::Vector3 GetRightVectorFromMatrix(const tyga::Matrix4x4 m);
 	tyga::Vector3 GetUpVectorFromMatrix(tyga::Matrix4x4 m);
-	*/
+	
 
 	tyga::Matrix4x4 CombineMatrices(const tyga::Matrix4x4 first, const tyga::Matrix4x4 second);
 
@@ -680,7 +682,12 @@ namespace MathUtils {
 	*/
 	float SinWave(float frequency, float amplitude, float phase, float inital, float time);
 
+	int RandomSeed(int seed = -1);
 
+	float RandomRange(float min, float max);
+	float RandomUnit();
+
+	tyga::Vector3 RandomDirection();
 
 }
 

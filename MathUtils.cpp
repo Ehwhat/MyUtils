@@ -1,8 +1,11 @@
 #include "MathUtils.h"
 #include <cmath>
 #include <algorithm>
+#include <chrono>
 
 namespace MathUtils {
+
+	std::minstd_rand randEngine;
 
 	float MilesPerHourToMetersPerMinute(float miles)
 	{
@@ -330,6 +333,30 @@ namespace MathUtils {
 	float SinWave(float frequency, float amplitude, float phase, float inital, float time)
 	{
 		return inital + sinf(2*_pi*frequency*time + phase)*amplitude;
+	}
+
+	int RandomSeed(int seed) {
+		if (seed == -1) {
+			seed = std::chrono::system_clock::now().time_since_epoch().count();
+		}
+		randEngine.seed(seed);
+		return seed;
+	}
+
+	float RandomRange(float min, float max)
+	{
+		std::uniform_real_distribution<float> dist(min, max);
+		return dist(randEngine);
+	}
+
+	float RandomUnit()
+	{
+		return RandomRange(0, 1);
+	}
+
+	tyga::Vector3 RandomDirection()
+	{
+		return SphericalPositionToVectorPosition(RandomRange(0,M_PI), RandomRange(0, M_PI), 1);
 	}
 	
 
